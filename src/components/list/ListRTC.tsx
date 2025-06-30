@@ -12,7 +12,7 @@ const ListRTC = (props: Props) => {
   const { setHeaderActive, user } = props;
   return (
     <div className='list-body'>
-        <ChatList setHeaderActive={setHeaderActive} />
+        <ChatList setHeaderActive={setHeaderActive} userId={user?.id || user?.uid || ''} />
         <div className='user-bar'>
             <UserBar user={user} />
         </div>

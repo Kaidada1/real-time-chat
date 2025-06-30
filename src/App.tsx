@@ -43,7 +43,7 @@ function App() {
         user ? (
           <>
             <ListRTC setHeaderActive={setHeaderActive} user={profile} />
-            <ChatBox headerActive={headerActive} />
+            <ChatBox headerActive={headerActive} currentUserId={user?.uid || ''} />
             <Detail />
           </>
         ) : (

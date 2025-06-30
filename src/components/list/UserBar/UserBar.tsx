@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import "./userbar.css"
-import { getStorage, getDownloadURL, ref } from "firebase/storage";
+import { getDownloadURL, ref } from "firebase/storage";
 import { storage } from '../../../lib/firebase';
 
 type Props = {

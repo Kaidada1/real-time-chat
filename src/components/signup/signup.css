@@ -41,6 +41,20 @@
     border-radius: 5px;
     cursor: pointer;
     }
+
+    .avt{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    padding-left: 60px;
+    margin: 20px;
+    padding-bottom: 50px;
+    img{
+        width: 100px;
+        height: 100px;
+    }
+}
 }
 
 
@@ -74,16 +88,3 @@ input{
     transition: box-shadow 0.3s ease, background-color 0.3s ease;
 }
 
-.avt{
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    padding-left: 60px;
-    margin: 20px;
-    padding-bottom: 50px;
-    img{
-        width: 100px;
-        height: 100px;
-    }
-}

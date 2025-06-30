@@ -7,10 +7,11 @@ import { auth } from '../../lib/firebase';
 
 type Props = {
   headerActive: 'cb-header-1' | 'cb-header-2';
+  currentUserId: string;
 }
 
 const ChatBox = (props: Props) => {
-  const { headerActive } = props;
+  const { headerActive, currentUserId } = props;
   const [openEmoji, setOpenEmoji] = React.useState(false);
   const [selectedEmoji, setSelectedEmoji] = React.useState("");
   const [addMode, setAddMode] = React.useState(false);
@@ -35,7 +36,7 @@ const ChatBox = (props: Props) => {
           >Add</button>
           <button className='logout-btn' onClick={handleLogout}>Log Out</button>
         </div>
-        {addMode&&<AddUser/>}
+          {addMode&&<AddUser currentUserId={currentUserId} />}
       </div>
       )}
       {headerActive === 'cb-header-2' && (
