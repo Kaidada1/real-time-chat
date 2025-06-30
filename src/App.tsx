@@ -1,24 +1,56 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useEffect, useState } from 'react';
 import './App.css';
+import ChatBox from './components/chatbox/ChatBox';
+import Detail from './components/detail/Detail';
+import ListRTC from './components/list/ListRTC';
+import AuthModal from './components/auth/AuthModal';
+import Notification from './components/notification/Notification';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth, db } from './lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 function App() {
+  const [headerActive, setHeaderActive] = useState<'cb-header-1' | 'cb-header-2'>('cb-header-1');
+  const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    const unSub = onAuthStateChanged(auth, async (user) => {
+      console.log(user, "here");
+      setUser(user);
+      if (user) {
+        const docRef = doc(db, 'users', user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setProfile(docSnap.data());
+        } else {
+          setProfile(null);
+        }
+      } else {
+        setProfile(null);
+      }
+    });
+
+    return () => {
+      unSub();
+    };
+    
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="container">
+      {
+        user ? (
+          <>
+            <ListRTC setHeaderActive={setHeaderActive} user={profile} />
+            <ChatBox headerActive={headerActive} />
+            <Detail />
+          </>
+        ) : (
+          <AuthModal />
+        )
+      }
+      <Notification />
     </div>
   );
 }

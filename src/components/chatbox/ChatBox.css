@@ -1,0 +1,179 @@
+.cb-body{
+    flex: 2;
+    background-color: #1A1A1E;
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+}
+
+.cb-header-1{
+    display: flex;
+    margin: 5px;
+    padding: 10px;
+    justify-content: space-between;
+    border-bottom: 1px solid #ccc;
+}
+.addfr-btn{
+    background-color: #5865F2;
+    border-radius: 10px;
+    width: 100px;
+    height: 50px;
+}
+
+.logout-btn{
+    background-color: #ff3535d5;
+    border-radius: 10px;
+    width: 100px;
+    height: 50px;
+}
+
+.cb-header-2{
+    display: flex;
+    margin: 15px;
+    padding: 20px;
+    justify-content: space-between;
+    border-bottom: 1px solid #ccc;
+}
+
+.display-chat{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.user-info{
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+     img{
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    span{
+        margin-left: 10px;
+        font-weight: 500;
+        font-size: x-large;
+    }
+}
+
+.mess-box{
+    padding: 20px;  
+    flex: 1;
+    overflow: scroll;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.message{
+    max-width: 100%;
+    display: flex;
+    gap: 20px;
+    border-bottom: 1px solid #565656;
+
+    img{
+        height: 30px;
+        width: 30px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    texts{
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    p{
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+
+    span{
+        font-size: 18px;
+    }
+}
+
+.message-own{
+    max-width: 100%;
+    display: flex;
+    gap: 20px;
+    border-bottom: 1px solid #565656;
+
+    img{
+        height: 30px;
+        width: 30px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    texts{
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    p{
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+
+    span{
+        font-size: 18px;
+    }
+}
+
+
+.chat-input{
+    display: flex;
+    padding: 20px;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #1F1F23;
+    border-radius: 20px;
+    margin: 20px;
+    flex: 1;
+    margin-top: auto;
+
+    input{
+        background-color: #1F1F23;
+        outline: none;
+        color: white;
+        flex: 1;
+        border: none;
+        padding: 8px 12px;
+        font-size: 16px;
+        border-radius: 6px;
+        transition: box-shadow 0.3s ease, background-color 0.3s ease;
+    }
+
+    button{
+        background-color: #1F1F23;
+        color: white;
+        border: none;
+    }
+}
+
+.emoji{
+    position: relative;
+    margin-right: 10px;
+
+    img{
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+}
+
+.picked{
+    position: absolute;
+    bottom: 50px;
+    left: 0;
+}

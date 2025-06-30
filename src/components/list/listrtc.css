@@ -1,0 +1,24 @@
+.list-body{
+    margin: 5px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.user-bar{
+    bottom: 0;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #66666f;  
+  border-radius: 10px;
+}

@@ -1,0 +1,27 @@
+.ub-body{
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content:space-between;
+
+    .user-info{
+        display: flex;
+        align-items: center;
+        gap: 20px;
+
+        img{
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+    }
+}
+
+.more{
+    img{
+        width: 25px;
+        height: 25px;
+        cursor: pointer;
+    }
+}
