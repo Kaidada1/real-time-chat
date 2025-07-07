@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import "./adduser.css"
 import { collection, query, where, getDocs, doc, setDoc } from "firebase/firestore";
 import { db } from '../../../lib/firebase';
+import { serverTimestamp } from "firebase/firestore";
 
 type User = {
   id: string;
@@ -50,21 +51,53 @@ const AddUser = (props: Props) => {
     }
   };
 
-  const handleAddUser = async () => {
-    if (!searchResult) return;
-    try {
-      const addedUserRef = doc(db, "users", currentUserId, "addedUsers", searchResult.id);
-      await setDoc(addedUserRef, {
-        username: searchResult.name,
-        avatar: searchResult.avatarUrl || "",
-      });
-      setError("");
-      alert(`User ${searchResult.name} added successfully.`);
-    } catch (err) {
-      setError("Failed to add user.");
-      console.error(err);
-    }
-  };
+ const handleAddUser = async () => {
+  if (!searchResult) return;
+
+  try {
+    const addedUserRef = doc(db, "users", currentUserId, "addedUsers", searchResult.id);
+    await setDoc(addedUserRef, {
+      username: searchResult.name,
+      avatar: searchResult.avatarUrl || "",
+    });
+
+    const combinedId =
+      currentUserId > searchResult.id
+        ? currentUserId + searchResult.id
+        : searchResult.id + currentUserId;
+
+    const now = Date.now();
+    const chatData = {
+      chatId: combinedId,
+      lastMessage: "",
+      receiverId: searchResult.id,
+      updatedAt: now,
+    };
+
+    await setDoc(doc(db, "userchats", currentUserId), {
+      chats: [chatData]
+    }, { merge: true });
+
+    await setDoc(doc(db, "userchats", searchResult.id), {
+      chats: [{
+        chatId: combinedId,
+        lastMessage: "",
+        receiverId: currentUserId,
+        updatedAt: now,
+      }]
+    }, { merge: true });
+
+    await setDoc(doc(db, "chats", combinedId), {
+      createdAt: serverTimestamp(),
+    });
+
+    alert(`User ${searchResult.name} added successfully.`);
+  } catch (err) {
+    console.error(err);
+    setError("Failed to add user.");
+  }
+};
+
 
   return (
     <div className='add-user'>

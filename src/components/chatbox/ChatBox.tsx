@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import "./ChatBox.css";
 import EmojiPicker from 'emoji-picker-react';
 import AddUser from './adduser/addUser';
 import { signOut } from 'firebase/auth';
-import { auth } from '../../lib/firebase';
+import { auth, db } from '../../lib/firebase';
+import { doc, DocumentData, onSnapshot } from 'firebase/firestore';
 
 type Props = {
   headerActive: 'cb-header-1' | 'cb-header-2';
@@ -15,6 +16,7 @@ const ChatBox = (props: Props) => {
   const [openEmoji, setOpenEmoji] = React.useState(false);
   const [selectedEmoji, setSelectedEmoji] = React.useState("");
   const [addMode, setAddMode] = React.useState(false);
+  const [chat, setChat] = React.useState<DocumentData | null>(null);
 
   const handleEmojiChange = (e: { emoji: string; }) => {
     setSelectedEmoji((prev) => prev + e.emoji);
@@ -25,6 +27,17 @@ const ChatBox = (props: Props) => {
       console.error("Error signing out: ", error);
     });
   };
+
+
+  useEffect(()=>{
+    const onC = onSnapshot(doc(db,"chats","GNfn2ad4Lbd4o71WaaVy2ekPbdI317LNcttSRKZcKZdVFxcCcX5d5F82"),(res)=>{
+        setChat(res.data())
+    })
+
+    return ()=>{
+      onC();
+    }
+  },[])
 
   return (
     <div className='cb-body'>
