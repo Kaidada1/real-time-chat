@@ -13,6 +13,7 @@ function App() {
   const [headerActive, setHeaderActive] = useState<'cb-header-1' | 'cb-header-2'>('cb-header-1');
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [chatId, setChatId] = useState("");
 
   useEffect(() => {
     const unSub = onAuthStateChanged(auth, async (user) => {
@@ -34,22 +35,29 @@ function App() {
     return () => {
       unSub();
     };
-    
   }, []);
 
   return (
     <div className="container">
-      {
-        user ? (
-          <>
-            <ListRTC setHeaderActive={setHeaderActive} user={profile} />
-            <ChatBox headerActive={headerActive} currentUserId={user?.uid || ''} />
-            <Detail />
-          </>
-        ) : (
-          <AuthModal />
-        )
-      }
+      {user ? (
+        <>
+          <ListRTC
+            setHeaderActive={setHeaderActive}
+            setChatId={setChatId}
+            user={profile}
+          />
+          {chatId && (
+          <ChatBox
+            headerActive={headerActive}
+            currentUserId={user?.uid || ''}
+            chatId={chatId}
+          />
+          )}
+          <Detail />
+        </>
+      ) : (
+        <AuthModal />
+      )}
       <Notification />
     </div>
   );

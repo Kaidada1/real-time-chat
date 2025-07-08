@@ -13,7 +13,9 @@ type User = {
 type Props = {
   setHeaderActive: React.Dispatch<React.SetStateAction<'cb-header-1' | 'cb-header-2'>>;
   userId: string;
+  setChatId: React.Dispatch<React.SetStateAction<string>>;
 }
+
 
 const ChatList = (props: Props) => {
   const { setHeaderActive, userId } = props;
@@ -23,9 +25,12 @@ const ChatList = (props: Props) => {
     setHeaderActive('cb-header-1');
   };
 
-  const handleChat  = ()=> {
-    setHeaderActive('cb-header-2')
-  }
+  const handleChat = (receiverId: string) => {
+    const chatId = [userId, receiverId].sort().join("");
+    props.setChatId(chatId);
+    setHeaderActive("cb-header-2");
+  };
+
 
   useEffect(() => {
     if (!userId) {
@@ -60,7 +65,7 @@ const ChatList = (props: Props) => {
           <span>Friend</span>
         </div>
         {users.map((user) => (
-          <div key={user.id} className='list-mess' onClick={handleChat} style={{cursor: 'pointer'}}>
+          <div key={user.id} className='list-mess' onClick={() => handleChat(user.id)} style={{cursor: 'pointer'}}>
             <img className='avt' src={user.avatarUrl || './fuxuan.webp'} alt={user.name}/>
             <div className='chat-preview'>
               <span>{user.name}</span>
