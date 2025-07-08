@@ -40,9 +40,9 @@ const Detail = (props: Props) => {
           </div>
         </div>
       </div>
-      <div className='block-btn'>
+      {/* <div className='block-btn'>
         <button>Block User</button>
-      </div>
+      </div> */}
     </div>
     
   )
