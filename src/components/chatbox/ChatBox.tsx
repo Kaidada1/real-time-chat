@@ -15,6 +15,7 @@ import {
   serverTimestamp,
   getDoc,
 } from 'firebase/firestore';
+import upload from '../../lib/upload';
 
 type Props = {
   headerActive: 'cb-header-1' | 'cb-header-2';
@@ -30,6 +31,10 @@ const ChatBox = (props: Props) => {
   const [messages, setMessages] = useState<DocumentData[]>([]);
   const endRef = useRef<HTMLDivElement>(null);
   const [receiverUser, setReceiverUser] = useState<DocumentData | null>(null);
+  const [img, setImg] = useState({
+    file:null,
+    url:"",
+  })
 
   const handleEmojiChange = (e: { emoji: string }) => {
     setSelectedEmoji((prev) => prev + e.emoji);
@@ -43,31 +48,51 @@ const ChatBox = (props: Props) => {
   };
 
   const handleSendMessage = async () => {
-  if (!selectedEmoji.trim() || !chatId) return;
+   if ((!selectedEmoji.trim() && !img.file) || !chatId) return;
 
   const userDoc = await getDoc(doc(db, "users", currentUserId));
   const senderAvatar = userDoc.exists() ? userDoc.data().avatar : null;
+  let imgUrl = null;
+
+
 
   try {
+
+    if(img.file){
+      imgUrl = await upload(img.file)
+    }
+
     await addDoc(collection(db, 'chats', chatId, 'messages'), {
       text: selectedEmoji,
       senderId: currentUserId,
       senderAvatar: senderAvatar,
       timestamp: serverTimestamp(),
+      ...(imgUrl && {img: imgUrl})
       });
     setSelectedEmoji('');
     } catch (error) {
       console.error('Send failed: ', error);
     }
+
+    setImg({
+      file:null,
+      url:""
+    })
   };
 
-const getReceiverId = () => {
-  if (!chatId || !currentUserId) return null;
-  return chatId.replace(currentUserId, '');
-};
+const handleImg = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImg({
+        file: e.target.files[0],
+        url: URL.createObjectURL(e.target.files[0])
+      })
+    }
+  }
 
 useEffect(() => {
-  const receiverId = getReceiverId();
+  if (!chatId || !currentUserId) return;
+
+  const receiverId = chatId.replace(currentUserId, '');
   if (!receiverId) return;
 
   const fetchReceiver = async () => {
@@ -77,9 +102,8 @@ useEffect(() => {
     }
   };
   fetchReceiver();
-}, [chatId]);
+}, [chatId, currentUserId]);
 
-  
 useEffect(() => {
   if (!chatId) return;
   const q = query(
@@ -119,7 +143,7 @@ useEffect(() => {
         <div className="display-chat">
          <div className="cb-header-2">
           <div className="user-info">
-            <img src={receiverUser?.avatar || './defaultavatar.png'} alt="" />
+            <img src={receiverUser?.avatar } alt="" />
             <div>
               <span>{receiverUser?.username || 'Unknown User'}</span>
             </div>
@@ -134,23 +158,38 @@ useEffect(() => {
                 key={index}
                 className={msg.senderId === currentUserId ? 'message-own' : 'message'}
               >
-                <img src={msg.senderAvatar || './defaultavatar.png'} alt="" />
+                <img src={msg.senderAvatar} alt="" className='sent-avt'/>
                 <div className="texts">
-                  <span>
+                  <div className="time">
                     {msg.timestamp?.toDate
                       ? new Date(msg.timestamp.toDate()).toLocaleTimeString()
                       : 'Just now'}
-                  </span>
-                  <p>{msg.text}</p>
+                  </div>
+                  {msg.img && <img src={msg.img} alt="sent" className="sent-img" />}
+                  {msg.text && <p>{msg.text}</p>}
                 </div>
               </div>
             ))}
             <div ref={endRef}></div>
           </div>
-
+            {img.url && (
+              <div className="preview-img">
+                <img src={img.url} alt="preview" />
+                <button className="remove-img-btn" onClick={() => setImg({ file: null, url: '' })}>
+                  X
+                </button>
+              </div>
+            )}
           <div className="footer">
             <div className="chat-input">
-              <div className="more-icons"></div>
+              
+              <div className="more-icons">
+                <label className='add-img'>+
+                  <input type='file' placeholder='.' id='file' className='send-img'
+                  onChange={handleImg}
+                />
+                </label>
+              </div>
               <input
                 type="text"
                 placeholder="Type a message..."
