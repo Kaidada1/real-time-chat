@@ -26,6 +26,7 @@ const ChatList = ({ setHeaderActive, userId, setChatId }: Props) => {
 
   const handleClick = () => {
     setHeaderActive("cb-header-1");
+    setChatId("");
   };
 
   const handleChat = (chatId: string) => {
@@ -135,7 +136,7 @@ const ChatList = ({ setHeaderActive, userId, setChatId }: Props) => {
           {!chat.isGroup && (
             <img
               className="avt"
-              src={chat.avatarUrl || "./default-avatar.png"}
+              src={chat.avatarUrl}
               alt={chat.name}
             />
           )}
