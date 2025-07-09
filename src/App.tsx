@@ -46,13 +46,11 @@ function App() {
             setChatId={setChatId}
             user={profile}
           />
-          {chatId && (
           <ChatBox
             headerActive={headerActive}
             currentUserId={user?.uid || ''}
             chatId={chatId}
           />
-          )}
           <Detail />
         </>
       ) : (
