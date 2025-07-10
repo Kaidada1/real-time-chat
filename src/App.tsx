@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import './App.css';
+import 'tailwindcss/tailwind.css';
 import ChatBox from './components/chatbox/ChatBox';
 import Detail from './components/detail/Detail';
 import ListRTC from './components/list/ListRTC';
@@ -17,30 +17,23 @@ function App() {
 
   useEffect(() => {
     const unSub = onAuthStateChanged(auth, async (user) => {
-      console.log(user, "here");
       setUser(user);
       if (user) {
         const docRef = doc(db, 'users', user.uid);
         const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setProfile(docSnap.data());
-        } else {
-          setProfile(null);
-        }
+        setProfile(docSnap.exists() ? docSnap.data() : null);
       } else {
         setProfile(null);
       }
     });
 
-    return () => {
-      unSub();
-    };
+    return () => unSub();
   }, []);
 
   return (
-    <div className="container">
+    <div className="w-[150vh] h-screen bg-gray-900 text-white">
       {user ? (
-        <>
+        <div className="grid grid-cols-[300px_1fr_300px] h-full border border-gray-700 rounded-lg shadow-lg overflow-hidden">
           <ListRTC
             setHeaderActive={setHeaderActive}
             setChatId={setChatId}
@@ -52,9 +45,11 @@ function App() {
             chatId={chatId}
           />
           <Detail />
-        </>
+        </div>
       ) : (
-        <AuthModal />
+        <div className="flex items-center justify-center h-full">
+          <AuthModal />
+        </div>
       )}
       <Notification />
     </div>

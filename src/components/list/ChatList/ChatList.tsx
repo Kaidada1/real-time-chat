@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "./chatlist.css";
+import { Input } from "@/components/ui/input";
 import { db } from "../../../lib/firebase";
 import { collection, doc, getDoc, onSnapshot } from "firebase/firestore";
 
@@ -98,7 +98,6 @@ const ChatList = ({ setHeaderActive, userId, setChatId }: Props) => {
           })
         );
 
-        // Merge addedUsers with chatList (avoid duplicates)
         const mergedMap = new Map<string, Chat>();
         chatList.forEach((chat) => mergedMap.set(chat.chatId, chat));
         addedUsersMap.forEach((chat, id) => {
@@ -118,34 +117,44 @@ const ChatList = ({ setHeaderActive, userId, setChatId }: Props) => {
   }, [userId]);
 
   return (
-    <div className="chat-list">
-      <div className="search-bar">
-        <input className="search-input" type="text" placeholder="search" />
+    <div className="h-full flex flex-col bg-[#0e0e1c] text-white border-r border-gray-800 overflow-y-auto">
+      <div className="p-4">
+        <Input
+          className="bg-gray-800 border-none text-white placeholder-gray-400 focus:ring-0"
+          placeholder="Search"
+        />
       </div>
 
-      <div className="friend" onClick={handleClick}>
-        <span>Friend</span>
+      <div
+        className="px-4 py-2 text-sm text-indigo-400 font-semibold cursor-pointer hover:underline"
+        onClick={handleClick}
+      >
+        Friend
       </div>
 
-      {chats.map((chat) => (
-        <div
-          key={chat.chatId}
-          className="list-mess"
-          onClick={() => handleChat(chat.chatId)}
-        >
-          {!chat.isGroup && (
-            <img
-              className="avt"
-              src={chat.avatarUrl}
-              alt={chat.name}
-            />
-          )}
-          <div className="chat-preview">
-            <span>{chat.name}</span>
-            <p>{chat.lastMessage}</p>
+      <div className="flex flex-col gap-1 px-2 overflow-y-auto">
+        {chats.map((chat) => (
+          <div
+            key={chat.chatId}
+            onClick={() => handleChat(chat.chatId)}
+            className="flex items-center gap-3 px-3 py-2 hover:bg-gray-800 rounded-lg cursor-pointer transition"
+          >
+            {!chat.isGroup && (
+              <img
+                src={chat.avatarUrl}
+                alt={chat.name}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+            )}
+            <div className="flex-1">
+              <div className="font-medium truncate">{chat.name}</div>
+              <div className="text-sm text-gray-400 truncate">
+                {chat.lastMessage}
+              </div>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 };
