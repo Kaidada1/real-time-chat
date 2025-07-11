@@ -13,7 +13,7 @@ const UserBar = (props: Props) => {
   const { user } = props;
   const [avatarUrl, setAvatarUrl] = useState("./catavt.png");
 
-  const displayName = user?.username || "UserName";
+  const displayName =user?.name|| user?.username || "UserName";
 
   useEffect(() => {
     if (user?.avatar) {

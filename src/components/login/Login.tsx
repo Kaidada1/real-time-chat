@@ -1,8 +1,9 @@
 import { toast } from "react-toastify";
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { auth } from "../../lib/firebase";
+import { auth, db } from "../../lib/firebase";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 type Props = {
   onToggleSignup?: () => void;
@@ -25,15 +26,32 @@ const Login = (props: Props) => {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-      toast.success("Logged in with Google!");
-    } catch (err: any) {
-      toast.error(err.message);
+ const handleGoogleLogin = async () => {
+  const provider = new GoogleAuthProvider();
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+
+    // Kiểm tra xem user đã tồn tại trong Firestore chưa
+    const userDocRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userDocRef);
+
+    if (!userSnap.exists()) {
+      // Nếu chưa, tạo mới user
+      await setDoc(userDocRef, {
+        uid: user.uid,
+        name: user.displayName,
+        email: user.email,
+        avatar: user.photoURL,
+        createdAt: new Date(),
+      });
     }
-  };
+
+    toast.success("Logged in with Google!");
+  } catch (err: any) {
+    toast.error(err.message);
+  }
+};
 
   return (
     <div className="fixed top-0 left-0 w-screen h-screen bg-white flex justify-center items-center z-50">

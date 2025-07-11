@@ -137,7 +137,7 @@ const ChatList = ({ setHeaderActive, userId, setChatId }: Props) => {
           <div
             key={chat.chatId}
             onClick={() => handleChat(chat.chatId)}
-            className="flex items-center gap-3 px-3 py-2 hover:bg-gray-400 rounded-lg cursor-pointer transition"
+            className="flex items-center gap-3 px-3 py-2 hover:bg-gray-400 rounded-lg cursor-pointer transition border"
           >
             {!chat.isGroup && (
               <img
