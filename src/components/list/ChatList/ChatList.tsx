@@ -117,10 +117,10 @@ const ChatList = ({ setHeaderActive, userId, setChatId }: Props) => {
   }, [userId]);
 
   return (
-    <div className="h-full flex flex-col bg-[#0e0e1c] text-white border-r border-gray-800 overflow-y-auto">
+    <div className="h-full flex flex-col bg-[#ffffff] text-black border-r overflow-y-auto">
       <div className="p-4">
         <Input
-          className="bg-gray-800 border-none text-white placeholder-gray-400 focus:ring-0"
+          className="bg-[#ffffff] border-none text-black focus:ring-0"
           placeholder="Search"
         />
       </div>
@@ -137,7 +137,7 @@ const ChatList = ({ setHeaderActive, userId, setChatId }: Props) => {
           <div
             key={chat.chatId}
             onClick={() => handleChat(chat.chatId)}
-            className="flex items-center gap-3 px-3 py-2 hover:bg-gray-800 rounded-lg cursor-pointer transition"
+            className="flex items-center gap-3 px-3 py-2 hover:bg-gray-400 rounded-lg cursor-pointer transition"
           >
             {!chat.isGroup && (
               <img

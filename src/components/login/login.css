@@ -80,3 +80,18 @@ input{
     border-radius: 6px;
     transition: box-shadow 0.3s ease, background-color 0.3s ease;
 }
+
+.google-btn {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.google-btn button {
+  background-color: #4285f4;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+}

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react'
 import "./userbar.css"
 import { getDownloadURL, ref } from "firebase/storage";
 import { storage } from '../../../lib/firebase';
+import { Settings, Sidebar } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 type Props = {
   user?: any;
@@ -33,13 +35,15 @@ const UserBar = (props: Props) => {
   }, [user]);
 
   return (
-    <div className='ub-body'>
-        <div className='user-info'>
-            <img src={avatarUrl} alt='User Avatar' />
+    <div className='flex items-center justify-between p-5 bg-white text-black border-t-2'>
+        <div className='flex items-center gap-5'>
+            <img src={avatarUrl} alt='User Avatar' className='w-[50px] h-[50px] rounded-full object-cover'/>
             <h2>{displayName}</h2>
         </div>
         <div className='more'>
-            <img src='/avt.jpg' alt=''/>
+          <Button size="icon" className="size-8">
+            <Settings/>
+          </Button>
         </div>
     </div>
   )

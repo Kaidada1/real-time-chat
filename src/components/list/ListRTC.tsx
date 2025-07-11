@@ -12,7 +12,7 @@ type Props = {
 const ListRTC = (props: Props) => {
   const { setHeaderActive, user, setChatId } = props;
   return (
-    <div className='list-body'>
+    <div className=' bg-white flex flex-col justify-between'>
         <ChatList
           setHeaderActive={setHeaderActive}
           userId={user?.id || user?.uid || ''}

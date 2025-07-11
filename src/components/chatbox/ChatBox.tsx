@@ -217,7 +217,7 @@ const ChatBox = ({ headerActive, currentUserId, chatId }: Props) => {
               />
             </label>
             <Input
-              className="flex-1 bg-transparent border-none focus-visible:ring-0"
+              className="flex-1 bg-transparent border-none focus-visible:ring-0 text-black"
               placeholder="Type a message..."
               value={selectedEmoji}
               onChange={(e) => setSelectedEmoji(e.target.value)}
