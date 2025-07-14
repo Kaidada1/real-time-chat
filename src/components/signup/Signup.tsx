@@ -11,8 +11,7 @@ type Props = {
   onToggleLogin?: () => void;
 };
 
-const Signup = (props: Props) => {
-  const { onToggleLogin } = props;
+const Signup = ({ onToggleLogin }: Props) => {
   type AvatarType = {
     file: File | null;
     url: string;
@@ -32,14 +31,13 @@ const Signup = (props: Props) => {
     }
   };
 
-  const handleRegister = async (e: any) => {
+  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
+    const formData = new FormData(e.currentTarget);
 
-    const formDataObj = Object.fromEntries(formData);
-    const username = formDataObj.username as string;
-    const email = formDataObj.email as string;
-    const password = formDataObj.password as string;
+    const username = formData.get("username") as string;
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
 
     if (!email || !password) {
       toast.error("Email and password are required");
@@ -48,7 +46,6 @@ const Signup = (props: Props) => {
 
     try {
       const res = await createUserWithEmailAndPassword(auth, email, password);
-
       const imgUrl = await upload(avatar.file);
 
       await setDoc(doc(db, "users", res.user.uid), {
@@ -70,74 +67,79 @@ const Signup = (props: Props) => {
   };
 
   return (
-    <div className="fixed inset-0 flex justify-center items-center bg-white z-[1000]">
-      <div className="w-[400px] max-w-[90vw] bg-gray-700 border border-gray-300 p-8 flex flex-col items-center gap-5 overflow-hidden shadow-lg">
-        <div className="flex flex-col items-center gap-5 justify-center flex-1 w-full">
-          <form action="" onSubmit={handleRegister} className="w-full">
-            <div className="flex flex-row items-center justify-center pl-15 mb-5 pb-12">
-              <label
-                htmlFor="file"
-                className="flex flex-col items-center cursor-pointer"
-              >
-                {avatar.url ? (
-                  <img
-                    src={avatar.url}
-                    alt=""
-                    className="w-24 h-24 object-cover rounded-full mb-2"
-                  />
-                ) : (
-                  <div className="w-24 h-24 bg-gray-500 rounded-full mb-2 flex justify-center items-center text-white text-center">
-                    Upload Avatar
-                  </div>
-                )}
-              </label>
-              <input
-                type="file"
-                id="file"
-                style={{ display: "none" }}
-                onChange={handleAvatar}
-              />
-            </div>
-            <div className="mb-4">
-              <h4 className="text-white mb-1">UserName:</h4>
-              <Input
-                type="text"
-                placeholder="username"
-                name="username"
-                className="bg-[#1F1F23]"
-              />
-            </div>
-            <div className="mb-4">
-              <h4 className="text-white mb-1">Email:</h4>
-              <Input
-                type="email"
-                placeholder="email"
-                name="email"
-                className="bg-[#1F1F23]"
-              />
-            </div>
-            <div className="mb-4">
-              <h4 className="text-white mb-1">Password:</h4>
-              <Input
-                type="password"
-                placeholder="password"
-                name="password"
-                className="bg-[#1F1F23]"
-              />
-            </div>
-            <div className="flex justify-center my-5">
-              <Button className="bg-red-600">Sign Up</Button>
-            </div>
-          </form>
-        </div>
-        <div className="flex justify-center w-full">
+    <div className="min-h-screen max-w-screen-xl flex items-center justify-center px-4">
+      <div className="bg-white rounded-2xl shadow-xl w-[80vw] max-w-md p-8 flex flex-col gap-6 items-center">
+        <h2 className="text-3xl font-bold text-gray-800">Sign Up</h2>
+
+        <form onSubmit={handleRegister} className="w-full flex flex-col gap-4">
+          <div className="flex justify-center">
+            <label htmlFor="file" className="cursor-pointer flex flex-col items-center">
+              {avatar.url ? (
+                <img
+                  src={avatar.url}
+                  alt="Avatar"
+                  className="w-24 h-24 object-cover rounded-full"
+                />
+              ) : (
+                <div className="w-24 h-24 bg-gray-300 text-sm text-gray-600 rounded-full flex items-center justify-center">
+                  Upload Avatar
+                </div>
+              )}
+            </label>
+            <input
+              type="file"
+              id="file"
+              style={{ display: "none" }}
+              onChange={handleAvatar}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm text-gray-600">Username</label>
+            <Input
+              type="text"
+              name="username"
+              placeholder="Enter your username"
+              className="mt-1 text-black"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm text-gray-600">Email</label>
+            <Input
+              type="email"
+              name="email"
+              placeholder="Enter your email"
+              className="mt-1 text-black"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm text-gray-600">Password</label>
+            <Input
+              type="password"
+              name="password"
+              placeholder="Enter your password"
+              className="mt-1 text-black"
+            />
+          </div>
+
           <Button
-            onClick={onToggleLogin}
-            className="bg-cyan-600 text-white rounded-md px-5 py-2.5 cursor-pointer"
+            type="submit"
+            className="w-full bg-gradient-to-r from-cyan-400 to-pink-500 text-white font-bold py-2 rounded-full hover:opacity-90 transition"
           >
-            Sign In
+            Sign Up
           </Button>
-        </div>
+        </form>
+
+        <div className="text-sm text-gray-500 mt-2">Already have an account?</div>
+
+        <button
+          onClick={onToggleLogin}
+          className="text-pink-500 font-semibold hover:underline"
+        >
+          SIGN IN
+        </button>
       </div>
     </div>
   );
