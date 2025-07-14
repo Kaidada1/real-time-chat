@@ -209,11 +209,11 @@ const AddUser = ({ currentUserId }: Props) => {
           placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          className="p-5 rounded-lg border border-gray-300 outline-none text-black"
+          className="p-5 rounded-lg border border-gray-300 outline-none text-black h-5"
         />
         <button
           type="submit"
-          className="p-5 rounded-lg bg-blue-600 text-white border-none cursor-pointer"
+          className="p-2 rounded-lg bg-blue-600 text-white border-none cursor-pointer gap-4"
         >
           Search
         </button>
@@ -234,13 +234,13 @@ const AddUser = ({ currentUserId }: Props) => {
           <div className="flex gap-3">
             <button
               onClick={handleAddUser}
-              className="p-2 rounded-lg bg-blue-600 text-white border-none cursor-pointer"
+              className="p-2 rounded-lg bg-blue-600 text-white border-none cursor-pointer gap-4"
             >
               Add
             </button>
             <button
               onClick={handleSelectForGroup}
-              className="p-2 rounded-lg bg-blue-600 text-white border-none cursor-pointer"
+              className="p-2 rounded-lg bg-blue-600 text-white border-none cursor-pointer gap-4"
             >
               Add to Group
             </button>
@@ -249,11 +249,11 @@ const AddUser = ({ currentUserId }: Props) => {
       )}
 
       {selectedUsers.length > 0 && (
-        <div className="mt-8">
+        <div className="mt-8 text-black m-3">
           <h4>Thành viên nhóm:</h4>
           <ul>
             {selectedUsers.map((user) => (
-              <li key={user.id} className="flex items-center gap-3">
+              <li key={user.id} className="flex items-center gap-3 m-5">
                 <img
                   src={user.avatarUrl || ""}
                   alt={user.name}
@@ -268,11 +268,11 @@ const AddUser = ({ currentUserId }: Props) => {
             placeholder="Tên nhóm"
             value={groupName}
             onChange={(e) => setGroupName(e.target.value)}
-            className="p-5 rounded-lg border border-gray-300 outline-none mt-4 text-black"
+            className="p-5 rounded-lg border border-gray-300 outline-none text-black h-5 mr-4"
           />
           <button
             onClick={handleCreateGroup}
-            className="p-5 rounded-lg bg-blue-600 text-white border-none cursor-pointer mt-4"
+            className="p-2 rounded-lg bg-blue-600 text-white border-none cursor-pointer gap-4"
           >
             Tạo nhóm
           </button>

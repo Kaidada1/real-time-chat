@@ -1,16 +1,47 @@
-import React from "react";
+import { storage } from "@/lib/firebase";
+import { getDownloadURL, ref } from "firebase/storage";
+import React, { useEffect, useState } from "react";
 
-const Detail = () => {
+type Props ={
+  user?: any;
+}
+
+const Detail = (props : Props) => {
+  const {user} = props;
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const detailName = user?.username;
+
+
+  useEffect(() => {
+      if (user?.avatar) {
+        if (user.avatar.startsWith("http")) {
+          setAvatarUrl(user.avatar);
+        } else {
+          const storageRef = ref(storage, user.avatar);
+          getDownloadURL(storageRef)
+            .then((url) => {
+              setAvatarUrl(url);
+            })
+            .catch(() => {
+              setAvatarUrl("./catavt.png");
+            });
+        }
+      } else {
+        setAvatarUrl("./catavt.png");
+      }
+    }, [user]);
+  
+
   return (
-    <div className="h-full w-full bg-[#111827] text-white p-6 flex flex-col gap-6 border-l border-gray-800">
+    <div className="h-full w-full bg-[#111827] text-white p-6 flex flex-col gap-6">
       {/* Avatar + Username */}
       <div className="flex flex-col items-center">
         <img
-          src="./fuxuan.webp"
+          src={avatarUrl}
           alt="User Avatar"
           className="w-24 h-24 rounded-full object-cover border-4 border-indigo-600"
         />
-        <h2 className="text-xl font-semibold mt-3">Fuxuan</h2>
+        <h2 className="text-xl font-semibold mt-3">{detailName}</h2>
       </div>
 
       {/* Settings Section */}

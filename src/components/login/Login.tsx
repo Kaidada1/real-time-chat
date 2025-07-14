@@ -60,11 +60,11 @@ const Login = ({ onToggleSignup }: Props) => {
 
         <form onSubmit={handleLogin} className="w-full flex flex-col gap-4">
           <div>
-            <label className="text-sm text-gray-600">Username</label>
+            <label className="text-sm text-gray-600">Email</label>
             <Input
               type="text"
               name="email"
-              placeholder="Type your username"
+              placeholder="Type your email"
               className="mt-1 text-black"
             />
           </div>
