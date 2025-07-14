@@ -106,12 +106,21 @@ const ChatList = ({ setHeaderActive, userId, setChatId }: Props) => {
 
         const mergedMap = new Map<string, Chat>();
 
-        chatList.forEach((chat) => {
-          mergedMap.set(chat.chatId, chat);
-        });
-        addedUsersMap.forEach((chat) => {
-          if (!mergedMap.has(chat.chatId)) {
+        for (const chat of chatList) {
+          if (!chat.isGroup && chat.receiverId) {
+            mergedMap.set(chat.receiverId, chat);
+          } else {
             mergedMap.set(chat.chatId, chat);
+          }
+        }
+
+        addedUsersMap.forEach((chat, id) => {
+          if (
+            !chat.isGroup &&
+            chat.receiverId &&
+            !mergedMap.has(chat.receiverId)
+          ) {
+            mergedMap.set(chat.receiverId, chat);
           }
         });
 
@@ -120,9 +129,7 @@ const ChatList = ({ setHeaderActive, userId, setChatId }: Props) => {
     );
     return () => {
       if (unsubAddedUsers) unsubAddedUsers();
-      if (unsubUserChats) unsubUserChats();
     };
-    
   }, [userId]);
 
   return (

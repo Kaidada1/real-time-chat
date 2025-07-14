@@ -14,6 +14,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [chatId, setChatId] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unSub = onAuthStateChanged(auth, async (user) => {
@@ -25,10 +26,19 @@ function App() {
       } else {
         setProfile(null);
       }
+      setLoading(false);
     });
 
     return () => unSub();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center w-[100vw] h-screen bg-gray-900 text-white">
+        <p className="text-lg">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-[100vw] h-screen bg-gray-900 text-white">

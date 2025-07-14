@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Smile, ImageIcon, LogOutIcon, PlusIcon } from "lucide-react";
+import { Smile, ImageIcon, LogOutIcon, PlusIcon, Info } from "lucide-react";
 import EmojiPicker from "emoji-picker-react";
 import AddUser from "./adduser/addUser";
 import { signOut } from "firebase/auth";
@@ -35,6 +35,7 @@ const ChatBox = ({ headerActive, currentUserId, chatId }: Props) => {
   const [openEmoji, setOpenEmoji] = useState(false);
   const [img, setImg] = useState({ file: null, url: "" });
   const endRef = useRef<HTMLDivElement>(null);
+  const emojiRef = useRef<HTMLDivElement>(null);
 
   const handleEmojiChange = (e: { emoji: string }) => {
     setSelectedEmoji((prev) => prev + e.emoji);
@@ -56,25 +57,28 @@ const ChatBox = ({ headerActive, currentUserId, chatId }: Props) => {
   const handleSendMessage = async () => {
     if ((!selectedEmoji.trim() && !img.file) || !chatId) return;
 
-    const userDoc = await getDoc(doc(db, "users", currentUserId));
-    const senderAvatar = userDoc.exists() ? userDoc.data().avatar : null;
-    let imgUrl = null;
+    const textToSend = selectedEmoji;
+    const imgToSend = img;
+
+    setSelectedEmoji("");
+    setImg({ file: null, url: "" });
 
     try {
-      if (img.file) {
-        imgUrl = await upload(img.file);
+      const userDoc = await getDoc(doc(db, "users", currentUserId));
+      const senderAvatar = userDoc.exists() ? userDoc.data().avatar : null;
+
+      let imgUrl = null;
+      if (imgToSend.file) {
+        imgUrl = await upload(imgToSend.file);
       }
 
       await addDoc(collection(db, "chats", chatId, "messages"), {
-        text: selectedEmoji,
+        text: textToSend,
         senderId: currentUserId,
         senderAvatar,
         timestamp: serverTimestamp(),
         ...(imgUrl && { img: imgUrl }),
       });
-
-      setSelectedEmoji("");
-      setImg({ file: null, url: "" });
     } catch (error) {
       console.error("Send failed: ", error);
     }
@@ -125,8 +129,24 @@ const ChatBox = ({ headerActive, currentUserId, chatId }: Props) => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (emojiRef.current && !emojiRef.current.contains(e.target as Node)) {
+        setOpenEmoji(false);
+      }
+    };
+
+    if (openEmoji) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [openEmoji]);
+
   return (
-    <div className="w-full h-full bg-background flex flex-col">
+    <div className="flex flex-col h-full overflow-hidden bg-background">
       {headerActive === "cb-header-1" && (
         <div className="flex items-center justify-between px-6 py-4 border-b border-border">
           <Button onClick={() => setAddMode((prev) => !prev)} variant="default">
@@ -140,121 +160,141 @@ const ChatBox = ({ headerActive, currentUserId, chatId }: Props) => {
       )}
 
       {headerActive === "cb-header-2" && (
-        <div className="flex flex-col h-full">
+        <div className="w-full h-full flex flex-col bg-background">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-            <div className="flex items-center space-x-3">
-              {!isGroupChat && receiverUser?.avatar && (
-                <img
-                  src={receiverUser.avatar}
-                  alt=""
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-              )}
-              <span className="text-lg font-medium text-black">
-                {isGroupChat ? groupName : receiverUser?.username}
-              </span>
-            </div>
-          </div>
-
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
-            {messages.map((msg, index) => {
-              const isOwn = msg.senderId === currentUserId;
-              return (
-                <div
-                  key={index}
-                  className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
-                >
-                  <div
-                    className={`flex items-end space-x-2 ${
-                      isOwn ? "flex-row-reverse" : ""
-                    }`}
-                  >
-                    <img
-                      src={msg.senderAvatar}
-                      className="w-8 h-8 rounded-full object-cover"
-                      alt=""
-                    />
-                    <div
-                      className={`max-w-xs px-4 py-2 rounded-2xl shadow-sm ${
-                        isOwn
-                          ? "bg-cyan-400 text-primary-foreground rounded-br-none"
-                          : "bg-muted text-foreground rounded-bl-none"
-                      }`}
-                    >
-                      {msg.img && (
-                        <img
-                          src={msg.img}
-                          className="max-h-48 rounded-md mb-2 object-cover"
-                          alt="sent"
-                        />
-                      )}
-                      {msg.text && <p className="text-sm">{msg.text}</p>}
-                      <div className="text-[10px] text-gray-400 mt-1 text-right">
-                        {msg.timestamp?.toDate
-                          ? new Date(
-                              msg.timestamp.toDate()
-                            ).toLocaleTimeString()
-                          : "Just now"}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-            <div ref={endRef}></div>
-          </div>
-
-          {/* Preview Image */}
-          {img.url && (
-            <div className="relative w-fit bg-muted p-2 rounded-lg m-3">
-              <img
-                src={img.url}
-                alt="preview"
-                className="w-24 h-24 object-cover rounded-md"
-              />
-              <button
-                className="absolute -top-2 -right-2 bg-white text-black rounded-full w-6 h-6 flex items-center justify-center shadow"
-                onClick={() => setImg({ file: null, url: "" })}
-              >
-                ×
-              </button>
+          {headerActive === "cb-header-2" && (
+            <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-border">
+              <div className="flex items-center space-x-3">
+                {!isGroupChat && receiverUser?.avatar && (
+                  <img
+                    src={receiverUser.avatar}
+                    alt=""
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                )}
+                <span className="text-lg font-medium text-black">
+                  {isGroupChat ? groupName : receiverUser?.username}
+                </span>
+              </div>
+              <Info color="#00bfff"/>
             </div>
           )}
 
-          {/* Input */}
-          <div className="flex items-center gap-3 bg-muted px-4 py-3 rounded-full m-4">
-            <label htmlFor="file">
-              <ImageIcon className="w-5 h-5 text-muted-foreground cursor-pointer" />
-              <input
-                id="file"
-                type="file"
-                className="hidden"
-                accept="image/*"
-                onChange={handleImg}
-              />
-            </label>
-            <Input
-              className="flex-1 border-none outline-none focus-visible:ring-0 text-black shadow-none"
-              placeholder="Type a message..."
-              value={selectedEmoji}
-              onChange={(e) => setSelectedEmoji(e.target.value)}
-            />
-            <div className="relative">
-              <Smile
-                className="w-5 h-5 text-muted-foreground cursor-pointer"
-                onClick={() => setOpenEmoji((prev) => !prev)}
-              />
-              {openEmoji && (
-                <div className="absolute bottom-10 right-0 z-50">
-                  <EmojiPicker onEmojiClick={handleEmojiChange} />
-                </div>
-              )}
+          <div className="flex flex-col flex-1 overflow-hidden">
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+              {messages.map((msg, index) => {
+                const isOwn = msg.senderId === currentUserId;
+                return (
+                  <div
+                    key={index}
+                    className={`flex ${
+                      isOwn ? "justify-end" : "justify-start"
+                    }`}
+                  >
+                    <div
+                      className={`flex items-end space-x-2 ${
+                        isOwn ? "flex-row-reverse" : ""
+                      }`}
+                    >
+                      <img
+                        src={msg.senderAvatar}
+                        className="w-8 h-8 rounded-full object-cover"
+                        alt=""
+                      />
+                      <div
+                        className={`max-w-xs px-4 py-2 rounded-2xl shadow-sm ${
+                          isOwn
+                            ? "bg-cyan-400 text-primary-foreground rounded-br-none"
+                            : "bg-muted text-foreground rounded-bl-none"
+                        }`}
+                      >
+                        {msg.img && (
+                          <img
+                            src={msg.img}
+                            className="max-h-48 rounded-md mb-2 object-cover"
+                            alt="sent"
+                          />
+                        )}
+                        {msg.text && <p className="text-sm">{msg.text}</p>}
+                        <div className="text-[10px] text-gray-400 mt-1 text-right">
+                          {msg.timestamp?.toDate
+                            ? new Date(
+                                msg.timestamp.toDate()
+                              ).toLocaleTimeString()
+                            : "Just now"}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              <div ref={endRef}></div>
             </div>
-            <Button size="sm" onClick={handleSendMessage}>
-              Send
-            </Button>
+
+            {/* Preview Image */}
+            {img.url && (
+              <div className="shrink-0 relative w-fit bg-muted p-2 rounded-lg m-3">
+                <img
+                  src={img.url}
+                  alt="preview"
+                  className="w-24 h-24 object-cover rounded-md"
+                />
+                <button
+                  className="absolute -top-2 -right-2 bg-white text-black rounded-full w-6 h-6 flex items-center justify-center shadow"
+                  onClick={() => setImg({ file: null, url: "" })}
+                >
+                  ×
+                </button>
+              </div>
+            )}
+
+            {/* Input */}
+            <div className="shrink-0 flex items-center gap-3 bg-muted px-4 py-3 rounded-full m-4">
+              <div>
+                <ImageIcon
+                  className="w-5 h-5 text-muted-foreground cursor-pointer"
+                  onClick={() => document.getElementById("file")?.click()}
+                />
+                <input
+                  id="file"
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleImg}
+                  onClick={(e) => (e.currentTarget.value = "")}
+                />
+              </div>
+              <Input
+                className="flex-1 border-none outline-none focus-visible:ring-0 text-black shadow-none"
+                placeholder="Type a message..."
+                value={selectedEmoji}
+                onChange={(e) => setSelectedEmoji(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
+              />
+              <div className="relative">
+                <Smile
+                  className="w-5 h-5 text-muted-foreground cursor-pointer"
+                  onClick={() => setOpenEmoji((prev) => !prev)}
+                />
+                {openEmoji && (
+                  <div
+                    ref={emojiRef}
+                    className="absolute bottom-10 right-0 z-50"
+                  >
+                    <EmojiPicker onEmojiClick={handleEmojiChange} />
+                  </div>
+                )}
+              </div>
+              <Button size="sm" onClick={handleSendMessage}>
+                Send
+              </Button>
+            </div>
           </div>
         </div>
       )}
