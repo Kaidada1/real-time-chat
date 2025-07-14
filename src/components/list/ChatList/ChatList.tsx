@@ -65,7 +65,7 @@ const ChatList = ({ setHeaderActive, userId, setChatId }: Props) => {
       async (docSnap) => {
         const data = docSnap.data();
         if (!data || !Array.isArray(data.chats)) {
-          setChats(Array.from(addedUsersMap.values()));
+          setChats(Array.from(addedUsersMap.values())); 
           return;
         }
 
@@ -76,7 +76,7 @@ const ChatList = ({ setHeaderActive, userId, setChatId }: Props) => {
                 chatId: chat.chatId,
                 isGroup: true,
                 name: chat.groupName,
-                avatarUrl: "",
+                avatarUrl: chat.groupAvatar,
                 lastMessage: chat.lastMessage || "",
               };
             } else {
@@ -89,7 +89,7 @@ const ChatList = ({ setHeaderActive, userId, setChatId }: Props) => {
               return {
                 chatId,
                 isGroup: false,
-                name: receiverData?.username || "Unknown User",
+                name: receiverData?.name|| receiverData?.username || "Unknown User",
                 avatarUrl: receiverData?.avatar || "",
                 receiverId: chat.receiverId,
                 lastMessage: chat.lastMessage || "",

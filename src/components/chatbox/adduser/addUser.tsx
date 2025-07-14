@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import "./adduser.css";
 import {
   collection,
   query,
@@ -8,6 +7,7 @@ import {
   doc,
   setDoc,
   getDoc,
+  or,
 } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import { serverTimestamp } from "firebase/firestore";
@@ -52,7 +52,7 @@ const AddUser = ({ currentUserId }: Props) => {
           const data = docSnap.data();
           setSearchResult({
             id: docSnap.id,
-            name: data.username,
+            name: data.username|| data.name,
             avatarUrl: data.avatar,
           });
         });
@@ -149,6 +149,7 @@ const AddUser = ({ currentUserId }: Props) => {
       await setDoc(doc(db, "chats", groupId), {
         id: groupId,
         name: groupName,
+        groupAvatar:"./groupAvatar.jpg",
         isGroup: true,
         members: memberIds,
         createdAt: serverTimestamp(),
@@ -201,38 +202,64 @@ const AddUser = ({ currentUserId }: Props) => {
   };
 
   return (
-    <div className="add-user">
-      <form onSubmit={handleSearch}>
+    <div className="p-8 rounded-lg absolute top-32 left-1/2 transform -translate-x-1/2 w-max bg-white">
+      <form onSubmit={handleSearch} className="flex gap-5">
         <input
           type="text"
           placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          className="p-5 rounded-lg border border-gray-300 outline-none text-black"
         />
-        <button type="submit">Search</button>
+        <button
+          type="submit"
+          className="p-5 rounded-lg bg-blue-600 text-white border-none cursor-pointer"
+        >
+          Search
+        </button>
       </form>
 
-      {error && <p className="error">{error}</p>}
+      {error && <p className="text-red-600 mt-4">{error}</p>}
 
       {searchResult && (
-        <div className="user">
-          <div className="detail">
-            <img src={searchResult.avatarUrl || ""} alt={searchResult.name} />
-            <span>{searchResult.name}</span>
+        <div className="mt-12 flex items-center justify-between">
+          <div className="flex gap-5 items-center">
+            <img
+              src={searchResult.avatarUrl || ""}
+              alt={searchResult.name}
+              className="w-12 h-12 rounded-full object-cover"
+            />
+            <span className="">{searchResult.name}</span>
           </div>
-          <button onClick={handleAddUser}>Add</button>
-          <button onClick={handleSelectForGroup}>Add to Group</button>
+          <div className="flex gap-3">
+            <button
+              onClick={handleAddUser}
+              className="p-2 rounded-lg bg-blue-600 text-white border-none cursor-pointer"
+            >
+              Add
+            </button>
+            <button
+              onClick={handleSelectForGroup}
+              className="p-2 rounded-lg bg-blue-600 text-white border-none cursor-pointer"
+            >
+              Add to Group
+            </button>
+          </div>
         </div>
       )}
 
       {selectedUsers.length > 0 && (
-        <div className="group-section">
+        <div className="mt-8">
           <h4>Thành viên nhóm:</h4>
           <ul>
             {selectedUsers.map((user) => (
-              <li key={user.id}>
-                <img src={user.avatarUrl || ""} alt={user.name} width={30} />
-                <span>{user.name}</span>
+              <li key={user.id} className="flex items-center gap-3">
+                <img
+                  src={user.avatarUrl || ""}
+                  alt={user.name}
+                  className="w-8 h-8 rounded-full"
+                />
+                <span className="text-black">{user.name}</span>
               </li>
             ))}
           </ul>
@@ -241,8 +268,14 @@ const AddUser = ({ currentUserId }: Props) => {
             placeholder="Tên nhóm"
             value={groupName}
             onChange={(e) => setGroupName(e.target.value)}
+            className="p-5 rounded-lg border border-gray-300 outline-none mt-4 text-black"
           />
-          <button onClick={handleCreateGroup}>Tạo nhóm</button>
+          <button
+            onClick={handleCreateGroup}
+            className="p-5 rounded-lg bg-blue-600 text-white border-none cursor-pointer mt-4"
+          >
+            Tạo nhóm
+          </button>
         </div>
       )}
     </div>

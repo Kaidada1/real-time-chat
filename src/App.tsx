@@ -31,7 +31,7 @@ function App() {
   }, []);
 
   return (
-    <div className="w-[150vh] h-screen bg-gray-900 text-white">
+    <div className="w-[100vw] h-screen bg-gray-900 text-white">
       {user ? (
         <div className="grid grid-cols-[300px_1fr_300px] h-full border border-gray-700 rounded-lg shadow-lg overflow-hidden">
           <ListRTC

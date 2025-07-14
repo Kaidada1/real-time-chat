@@ -149,7 +149,7 @@ const ChatBox = ({ headerActive, currentUserId, chatId }: Props) => {
                 />
               )}
               <span className="text-lg font-medium text-black">
-                {isGroupChat ? groupName : receiverUser?.username}
+                {isGroupChat ? groupName : receiverUser?.username || receiverUser?.name}
               </span>
             </div>
           </div>
