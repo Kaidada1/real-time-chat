@@ -229,7 +229,7 @@ const AddUser = ({ currentUserId }: Props) => {
               alt={searchResult.name}
               className="w-12 h-12 rounded-full object-cover"
             />
-            <span className="">{searchResult.name}</span>
+            <span className="text-black">{searchResult.name}</span>
           </div>
           <div className="flex gap-3">
             <button
