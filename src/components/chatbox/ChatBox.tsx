@@ -259,7 +259,7 @@ const ChatBox = ({ headerActive, currentUserId, chatId }: Props) => {
                           />
                         )}
                         {msg.text && <p className="text-sm">{msg.text}</p>}
-                        <div className="text-[10px] text-gray-400 mt-1 text-right">
+                        <div className="text-[10px] text-gray-600 mt-1 text-right">
                           {msg.timestamp?.toDate
                             ? new Date(
                                 msg.timestamp.toDate()
