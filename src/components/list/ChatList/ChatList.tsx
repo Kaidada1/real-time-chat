@@ -11,6 +11,7 @@ import {
   orderBy,
   query,
 } from "firebase/firestore";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Chat = {
   chatId: string;
@@ -33,6 +34,7 @@ type Props = {
 
 const ChatList = ({ setHeaderActive, userId, setChatId }: Props) => {
   const [chats, setChats] = useState<Chat[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const handleClick = () => {
     setHeaderActive("cb-header-1");
@@ -167,6 +169,7 @@ const ChatList = ({ setHeaderActive, userId, setChatId }: Props) => {
         });
 
         setChats(Array.from(mergedMap.values()));
+        setLoading(false);
       }
     );
     return () => {
@@ -191,7 +194,19 @@ const ChatList = ({ setHeaderActive, userId, setChatId }: Props) => {
       </div>
 
       <div className="flex flex-col gap-1 px-2 overflow-y-auto">
-        {chats.map((chat) => (
+        {loading? (
+          Array.from({length: 5}).map((_,idx)=>(
+            <div key={idx} className="flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition">
+              <Skeleton className="w-10 h-10 rounded-full object-cover"></Skeleton>
+              <div className="flex-1">
+                <div className="flex justify-between items-center">
+                  <Skeleton className="truncate h-4 w-full"></Skeleton>
+                </div>
+                <Skeleton className="truncate h-2 w-[70%] mt-3"/>
+              </div>
+            </div>
+          ))
+        ):(chats.map((chat) => (
           <div
             key={chat.chatId}
             onClick={() => handleChat(chat.chatId)}
@@ -214,7 +229,7 @@ const ChatList = ({ setHeaderActive, userId, setChatId }: Props) => {
                 {chat.lastMessage}
               </div>
             </div>
-          </div>
+          </div>)
         ))}
       </div>
     </div>

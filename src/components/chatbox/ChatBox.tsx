@@ -197,7 +197,11 @@ const ChatBox = ({ headerActive, currentUserId, chatId }: Props) => {
           <Button variant="destructive" onClick={handleLogout}>
             <LogOutIcon className="mr-2 h-4 w-4" /> Logout
           </Button>
-          {addMode && <AddUser currentUserId={currentUserId} />}
+          <AddUser
+            currentUserId={currentUserId}
+            isOpen={addMode}
+            onClose={() => setAddMode(false)}
+          />
         </div>
       )}
 
