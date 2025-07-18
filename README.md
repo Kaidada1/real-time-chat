@@ -1,46 +1,193 @@
-# Getting Started with Create React App
+Real-time Chat Application
+Ứng dụng chat thời gian thực được xây dựng với TypeScript, Tailwind CSS và Firebase.
+✨ Tính năng
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+💬 Nhắn tin thời gian thực
+👥 Hỗ trợ nhiều người dùng
+🎨 Giao diện hiện đại với Tailwind CSS
+📱 Responsive design
+🔐 Xác thực người dùng với Firebase Auth
+💾 Lưu trữ tin nhắn trên Firebase Firestore
+🔔 Thông báo realtime
+👤 Quản lý profile người dùng
 
-## Available Scripts
+🛠️ Công nghệ sử dụng
 
-In the project directory, you can run:
+Frontend: React, TypeScript
+Styling: Tailwind CSS, PostCSS
+Database: Firebase Firestore
+Authentication: Firebase Auth
+Real-time: Firebase Firestore Real-time Listeners
+Build Tool: Vite
+Testing: React Testing Library (setupTests.ts)
+Hosting: Firebase Hosting
 
-### `npm start`
+📋 Yêu cầu hệ thống
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Node.js >= 16.0.0
+npm >= 7.0.0 hoặc yarn >= 1.22.0
+Firebase project đã được setup
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+🚀 Cài đặt
+1. Clone repository
+bashgit clone https://github.com/Kaidada1/real-time-chat.git
+cd real-time-chat
+2. Cài đặt dependencies
+bashnpm install
+# hoặc
+yarn install
+3. Cấu hình Firebase
+Tạo file .env trong thư mục gốc:
+envREACT_APP_FIREBASE_API_KEY=your_api_key
+REACT_APP_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+REACT_APP_FIREBASE_PROJECT_ID=your_project_id
+REACT_APP_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+REACT_APP_FIREBASE_APP_ID=your_app_id
+4. Cấu hình Firebase Firestore
+Tạo collection messages và users trong Firestore với rules:
+javascript// Firestore Security Rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /messages/{document} {
+      allow read, write: if request.auth != null;
+    }
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+5. Chạy ứng dụng
+bash# Development mode với Vite
+npm run dev
+# hoặc
+yarn dev
 
-### `npm test`
+# Build for production
+npm run build
+# hoặc
+yarn build
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+# Preview production build
+npm run preview
+# hoặc
+yarn preview
+Truy cập ứng dụng tại http://localhost:5173 (Vite default port)
+📁 Cấu trúc dự án
+real-time-chat/
+├── public/
+│   └── index.html
+├── src/
+│   ├── components/
+│   │   ├── auth/
+│   │   │   └── AuthModal.tsx
+│   │   ├── chatbox/
+│   │   │   ├── adduser/
+│   │   │   │   ├── adduser.css
+│   │   │   │   └── addUser.tsx
+│   │   │   ├── detail/
+│   │   │   │   ├── detail.css
+│   │   │   │   └── Detail.tsx
+│   │   │   ├── ChatBox.css
+│   │   │   └── ChatBox.tsx
+│   │   ├── list/
+│   │   │   ├── ChatList/
+│   │   │   │   ├── chatlist.css
+│   │   │   │   └── ChatList.tsx
+│   │   │   ├── UserBar/
+│   │   │   │   ├── userbar.css
+│   │   │   │   └── UserBar.tsx
+│   │   │   ├── listrtc.css
+│   │   │   └── ListRTC.tsx
+│   │   ├── login/
+│   │   │   ├── login.css
+│   │   │   └── Login.tsx
+│   │   ├── notification/
+│   │   │   └── Notification.tsx
+│   │   ├── signup/
+│   │   │   ├── signup.css
+│   │   │   └── Signup.tsx
+│   │   └── ui/
+│   │       ├── button.tsx
+│   │       ├── input.tsx
+│   │       ├── separator.tsx
+│   │       ├── sheet.tsx
+│   │       ├── sidebar.tsx
+│   │       ├── skeleton.tsx
+│   │       └── tooltip.tsx
+│   ├── hooks/
+│   │   └── use-mobile.tsx
+│   ├── lib/
+│   │   ├── firebase.ts
+│   │   ├── upload.ts
+│   │   └── utils.ts
+│   ├── App.tsx
+│   ├── App.css
+│   ├── App.test.tsx
+│   ├── index.tsx
+│   ├── index.css
+│   └── setupTests.ts
+├── .env
+├── .gitignore
+├── .hintrc
+├── components.json
+├── package.json
+├── package-lock.json
+├── postcss.config.js
+├── tailwind.config.js
+├── tsconfig.json
+├── vite.config.ts
+└── README.md
+🎯 Cách sử dụng
 
-### `npm run build`
+Đăng ký/Đăng nhập
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Mở trình duyệt và truy cập http://localhost:3000
+Đăng ký tài khoản mới hoặc đăng nhập bằng tài khoản có sẵn
+Hỗ trợ đăng nhập bằng Google/Email
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Chat
 
-### `npm run eject`
+Chọn người dùng hoặc tham gia phòng chat
+Gõ tin nhắn và nhấn Enter để gửi
+Tin nhắn sẽ hiển thị ngay lập tức cho tất cả người dùng
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Tính năng nâng cao
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+Tạo phòng chat nhóm
+Gửi emoji và sticker
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
 
-## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+🔧 Scripts
+bash# Chạy ứng dụng ở chế độ development với Vite
+npm run dev
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+# Build ứng dụng cho production
+npm run build
+
+# Preview production build
+npm run preview
+
+# Chạy tests
+npm test
+
+# Kiểm tra TypeScript
+npm run type-check
+
+# Lint và format code
+npm run lint
+npm run format
+
+# Deploy lên Firebase
+firebase deploy
+🔥 Firebase Setup
+
+Tạo Firebase project tại Firebase Console
+Bật Authentication và chọn phương thức đăng nhập
+Tạo Firestore database
+Cấu hình hosting (tùy chọn)
+Copy config vào file .env.local
