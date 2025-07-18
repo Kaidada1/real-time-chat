@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   collection,
   query,
@@ -7,10 +7,18 @@ import {
   doc,
   setDoc,
   getDoc,
-  or,
 } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import { serverTimestamp } from "firebase/firestore";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 type User = {
   id: string;
@@ -20,14 +28,26 @@ type User = {
 
 type Props = {
   currentUserId: string;
+  isOpen: boolean;
+  onClose: () => void;
 };
 
-const AddUser = ({ currentUserId }: Props) => {
+const AddUser = ({ currentUserId, isOpen, onClose }: Props) => {
   const [username, setUsername] = useState("");
   const [searchResult, setSearchResult] = useState<User | null>(null);
   const [error, setError] = useState("");
   const [groupName, setGroupName] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setUsername("");
+      setSearchResult(null);
+      setError("");
+      setGroupName("");
+      setSelectedUsers([]);
+    }
+  }, [isOpen]);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,7 +72,7 @@ const AddUser = ({ currentUserId }: Props) => {
           const data = docSnap.data();
           setSearchResult({
             id: docSnap.id,
-            name: data.username|| data.name,
+            name: data.username,
             avatarUrl: data.avatar,
           });
         });
@@ -120,6 +140,7 @@ const AddUser = ({ currentUserId }: Props) => {
       });
 
       alert(`User ${searchResult.name} added successfully.`);
+      onClose();
     } catch (err) {
       console.error(err);
       setError("Failed to add user.");
@@ -149,7 +170,7 @@ const AddUser = ({ currentUserId }: Props) => {
       await setDoc(doc(db, "chats", groupId), {
         id: groupId,
         name: groupName,
-        groupAvatar:"./groupAvatar.jpg",
+        groupAvatar: "./groupAvatar.jpg",
         isGroup: true,
         members: memberIds,
         createdAt: serverTimestamp(),
@@ -195,6 +216,7 @@ const AddUser = ({ currentUserId }: Props) => {
       alert("Tạo nhóm thành công!");
       setSelectedUsers([]);
       setGroupName("");
+      onClose();
     } catch (err) {
       console.error(err);
       alert("Tạo nhóm thất bại!");
@@ -202,83 +224,72 @@ const AddUser = ({ currentUserId }: Props) => {
   };
 
   return (
-    <div className="p-8 rounded-lg absolute top-32 left-1/2 transform -translate-x-1/2 w-max bg-white">
-      <form onSubmit={handleSearch} className="flex gap-5">
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          className="p-5 rounded-lg border border-gray-300 outline-none text-black h-5"
-        />
-        <button
-          type="submit"
-          className="p-2 rounded-lg bg-blue-600 text-white border-none cursor-pointer gap-4"
-        >
-          Search
-        </button>
-      </form>
-
-      {error && <p className="text-red-600 mt-4">{error}</p>}
-
-      {searchResult && (
-        <div className="mt-12 flex items-center justify-between">
-          <div className="flex gap-5 items-center">
-            <img
-              src={searchResult.avatarUrl || ""}
-              alt={searchResult.name}
-              className="w-12 h-12 rounded-full object-cover"
-            />
-            <span className="text-black">{searchResult.name}</span>
-          </div>
-          <div className="flex gap-3">
-            <button
-              onClick={handleAddUser}
-              className="p-2 rounded-lg bg-blue-600 text-white border-none cursor-pointer gap-4"
-            >
-              Add
-            </button>
-            <button
-              onClick={handleSelectForGroup}
-              className="p-2 rounded-lg bg-blue-600 text-white border-none cursor-pointer gap-4"
-            >
-              Add to Group
-            </button>
-          </div>
-        </div>
-      )}
-
-      {selectedUsers.length > 0 && (
-        <div className="mt-8 text-black m-3">
-          <h4>Thành viên nhóm:</h4>
-          <ul>
-            {selectedUsers.map((user) => (
-              <li key={user.id} className="flex items-center gap-3 m-5">
-                <img
-                  src={user.avatarUrl || ""}
-                  alt={user.name}
-                  className="w-8 h-8 rounded-full"
-                />
-                <span className="text-black">{user.name}</span>
-              </li>
-            ))}
-          </ul>
-          <input
-            type="text"
-            placeholder="Tên nhóm"
-            value={groupName}
-            onChange={(e) => setGroupName(e.target.value)}
-            className="p-5 rounded-lg border border-gray-300 outline-none text-black h-5 mr-4"
+    <AlertDialog open={isOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Thêm người dùng</AlertDialogTitle>
+        </AlertDialogHeader>
+        <form onSubmit={handleSearch} className="flex gap-3 mb-4">
+          <Input
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Tìm tên người dùng"
           />
-          <button
-            onClick={handleCreateGroup}
-            className="p-2 rounded-lg bg-blue-600 text-white border-none cursor-pointer gap-4"
-          >
-            Tạo nhóm
-          </button>
+          <Button type="submit">Tìm</Button>
+        </form>
+
+        {error && <p className="text-red-600 mb-2">{error}</p>}
+
+        {searchResult && (
+          <div className="flex justify-between items-center bg-gray-100 p-2 rounded">
+            <div className="flex items-center gap-2">
+              <img
+                src={searchResult.avatarUrl || ""}
+                alt={searchResult.name}
+                className="w-10 h-10 rounded-full"
+              />
+              <span>{searchResult.name}</span>
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={handleAddUser}>Add</Button>
+              <Button onClick={handleSelectForGroup}>Add to Group</Button>
+            </div>
+          </div>
+        )}
+
+        {selectedUsers.length > 0 && (
+          <div className="mt-4 space-y-2">
+            <p>Thành viên nhóm:</p>
+            <ul>
+              {selectedUsers.map((u) => (
+                <li key={u.id} className="flex items-center gap-2">
+                  <img
+                    src={u.avatarUrl || ""}
+                    alt={u.name}
+                    className="w-6 h-6 rounded-full"
+                  />
+                  <span>{u.name}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="flex gap-2 mt-2">
+              <Input
+                value={groupName}
+                onChange={(e) => setGroupName(e.target.value)}
+                placeholder="Tên nhóm"
+              />
+              <Button onClick={handleCreateGroup}>Tạo nhóm</Button>
+            </div>
+          </div>
+        )}
+
+        <div className="flex justify-end mt-6">
+          <Button variant="outline" onClick={onClose}>
+            Đóng
+          </Button>
         </div>
-      )}
-    </div>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 };
 
