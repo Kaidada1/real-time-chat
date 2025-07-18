@@ -64,6 +64,7 @@ service cloud.firestore {
     }
   }
 }
+
 5. Chạy ứng dụng
 bash# Development mode với Vite
 npm run dev
@@ -80,71 +81,7 @@ npm run preview
 # hoặc
 yarn preview
 Truy cập ứng dụng tại http://localhost:5173 (Vite default port)
-📁 Cấu trúc dự án
-real-time-chat/
-├── public/
-│   └── index.html
-├── src/
-│   ├── components/
-│   │   ├── auth/
-│   │   │   └── AuthModal.tsx
-│   │   ├── chatbox/
-│   │   │   ├── adduser/
-│   │   │   │   ├── adduser.css
-│   │   │   │   └── addUser.tsx
-│   │   │   ├── detail/
-│   │   │   │   ├── detail.css
-│   │   │   │   └── Detail.tsx
-│   │   │   ├── ChatBox.css
-│   │   │   └── ChatBox.tsx
-│   │   ├── list/
-│   │   │   ├── ChatList/
-│   │   │   │   ├── chatlist.css
-│   │   │   │   └── ChatList.tsx
-│   │   │   ├── UserBar/
-│   │   │   │   ├── userbar.css
-│   │   │   │   └── UserBar.tsx
-│   │   │   ├── listrtc.css
-│   │   │   └── ListRTC.tsx
-│   │   ├── login/
-│   │   │   ├── login.css
-│   │   │   └── Login.tsx
-│   │   ├── notification/
-│   │   │   └── Notification.tsx
-│   │   ├── signup/
-│   │   │   ├── signup.css
-│   │   │   └── Signup.tsx
-│   │   └── ui/
-│   │       ├── button.tsx
-│   │       ├── input.tsx
-│   │       ├── separator.tsx
-│   │       ├── sheet.tsx
-│   │       ├── sidebar.tsx
-│   │       ├── skeleton.tsx
-│   │       └── tooltip.tsx
-│   ├── hooks/
-│   │   └── use-mobile.tsx
-│   ├── lib/
-│   │   ├── firebase.ts
-│   │   ├── upload.ts
-│   │   └── utils.ts
-│   ├── App.tsx
-│   ├── App.css
-│   ├── App.test.tsx
-│   ├── index.tsx
-│   ├── index.css
-│   └── setupTests.ts
-├── .env
-├── .gitignore
-├── .hintrc
-├── components.json
-├── package.json
-├── package-lock.json
-├── postcss.config.js
-├── tailwind.config.js
-├── tsconfig.json
-├── vite.config.ts
-└── README.md
+
 🎯 Cách sử dụng
 
 Đăng ký/Đăng nhập
