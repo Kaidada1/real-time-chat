@@ -1,5 +1,8 @@
 Real-time Chat Application
+
 Ứng dụng chat thời gian thực được xây dựng với TypeScript, Tailwind CSS và Firebase.
+
+
 ✨ Tính năng
 
 💬 Nhắn tin thời gian thực
@@ -44,6 +47,9 @@ REACT_APP_FIREBASE_PROJECT_ID=your_project_id
 REACT_APP_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
 REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 REACT_APP_FIREBASE_APP_ID=your_app_id
+
+
+
 4. Cấu hình Firebase Firestore
 Tạo collection messages và users trong Firestore với rules:
 javascript// Firestore Security Rules
