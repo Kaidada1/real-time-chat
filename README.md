@@ -3,7 +3,7 @@ Real-time Chat Application
 Ứng dụng chat thời gian thực được xây dựng với TypeScript, Tailwind CSS và Firebase.
 
 
-✨ Tính năng
+# ✨ Tính năng
 
 💬 Nhắn tin thời gian thực
 👥 Hỗ trợ nhiều người dùng
@@ -14,7 +14,7 @@ Real-time Chat Application
 🔔 Thông báo realtime
 👤 Quản lý profile người dùng
 
-🛠️ Công nghệ sử dụng
+# 🛠️ Công nghệ sử dụng
 
 Frontend: React, TypeScript
 Styling: Tailwind CSS, PostCSS
@@ -25,21 +25,21 @@ Build Tool: Vite
 Testing: React Testing Library (setupTests.ts)
 Hosting: Firebase Hosting
 
-📋 Yêu cầu hệ thống
+# 📋 Yêu cầu hệ thống
 
 Node.js >= 16.0.0
 npm >= 7.0.0 hoặc yarn >= 1.22.0
 Firebase project đã được setup
 
 🚀 Cài đặt
-1. Clone repository
+# 1. Clone repository
 bashgit clone https://github.com/Kaidada1/real-time-chat.git
 cd real-time-chat
-2. Cài đặt dependencies
+# 2. Cài đặt dependencies
 bashnpm install
-# hoặc
+hoặc
 yarn install
-3. Cấu hình Firebase
+# 3. Cấu hình Firebase
 Tạo file .env trong thư mục gốc:
 envREACT_APP_FIREBASE_API_KEY=your_api_key
 REACT_APP_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
@@ -50,7 +50,7 @@ REACT_APP_FIREBASE_APP_ID=your_app_id
 
 
 
-4. Cấu hình Firebase Firestore
+# 4. Cấu hình Firebase Firestore
 Tạo collection messages và users trong Firestore với rules:
 javascript// Firestore Security Rules
 rules_version = '2';
@@ -65,24 +65,24 @@ service cloud.firestore {
   }
 }
 
-5. Chạy ứng dụng
+# 5. Chạy ứng dụng
 bash# Development mode với Vite
 npm run dev
-# hoặc
+hoặc
 yarn dev
 
 # Build for production
 npm run build
-# hoặc
+hoặc
 yarn build
 
 # Preview production build
 npm run preview
-# hoặc
+hoặc
 yarn preview
 Truy cập ứng dụng tại http://localhost:5173 (Vite default port)
 
-🎯 Cách sử dụng
+# 🎯 Cách sử dụng
 
 Đăng ký/Đăng nhập
 
