@@ -90,21 +90,22 @@ const Login = ({ onToggleSignup }: Props) => {
         <div className="text-sm text-gray-500">Or Sign Up Using</div>
 
         <div className="flex gap-4">
-          <button
+          <Button
             onClick={handleGoogleLogin}
             className="bg-red-600 text-white font-bold px-4 py-2 rounded-md shadow hover:opacity-90 transition"
           >
             Google
-          </button>
+          </Button>
         </div>
 
         <div className="text-sm text-gray-500 mt-4">Or Sign Up Using</div>
-        <button
+        <Button
           onClick={onToggleSignup}
+          variant="link"
           className="text-pink-500 font-semibold hover:underline"
         >
           SIGN UP
-        </button>
+        </Button>
       </div>
     </div>
   );
