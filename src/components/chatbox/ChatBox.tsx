@@ -16,6 +16,8 @@ import {
   serverTimestamp,
   getDoc,
   DocumentData,
+  arrayUnion,
+  setDoc,
 } from "firebase/firestore";
 import upload from "../../lib/upload";
 
@@ -57,20 +59,22 @@ const ChatBox = ({ headerActive, currentUserId, chatId }: Props) => {
   const handleSendMessage = async () => {
     if ((!selectedEmoji.trim() && !img.file) || !chatId) return;
 
-    const textToSend = selectedEmoji;
     const imgToSend = img;
+    const textToSend = selectedEmoji;
 
     setSelectedEmoji("");
     setImg({ file: null, url: "" });
 
     try {
-      const userDoc = await getDoc(doc(db, "users", currentUserId));
-      const senderAvatar = userDoc.exists() ? userDoc.data().avatar : null;
-
-      let imgUrl = null;
+      let imgUrl: string | null = null;
       if (imgToSend.file) {
         imgUrl = await upload(imgToSend.file);
       }
+
+      const lastMessage = imgUrl ? "Ảnh" : textToSend;
+
+      const userDoc = await getDoc(doc(db, "users", currentUserId));
+      const senderAvatar = userDoc.exists() ? userDoc.data().avatar : null;
 
       await addDoc(collection(db, "chats", chatId, "messages"), {
         text: textToSend,
@@ -79,6 +83,44 @@ const ChatBox = ({ headerActive, currentUserId, chatId }: Props) => {
         timestamp: serverTimestamp(),
         ...(imgUrl && { img: imgUrl }),
       });
+
+      const updatedAt = Date.now();
+
+      const chatInfo = {
+        chatId,
+        isGroup: isGroupChat,
+        lastMessage,
+        updatedAt,
+        ...(isGroupChat
+          ? {
+              groupName,
+              groupAvatar: "",
+            }
+          : {
+              receiverId: chatId.replace(currentUserId, ""),
+            }),
+      };
+
+      const senderRef = doc(db, "userchats", currentUserId);
+      await setDoc(senderRef, { chats: arrayUnion(chatInfo) }, { merge: true });
+
+      if (!isGroupChat) {
+        const receiverId = chatId.replace(currentUserId, "");
+        const receiverRef = doc(db, "userchats", receiverId);
+        await setDoc(
+          receiverRef,
+          {
+            chats: arrayUnion({
+              chatId,
+              isGroup: false,
+              receiverId: currentUserId,
+              lastMessage,
+              updatedAt,
+            }),
+          },
+          { merge: true }
+        );
+      }
     } catch (error) {
       console.error("Send failed: ", error);
     }
@@ -155,7 +197,11 @@ const ChatBox = ({ headerActive, currentUserId, chatId }: Props) => {
           <Button variant="destructive" onClick={handleLogout}>
             <LogOutIcon className="mr-2 h-4 w-4" /> Logout
           </Button>
-          {addMode && <AddUser currentUserId={currentUserId} />}
+          <AddUser
+            currentUserId={currentUserId}
+            isOpen={addMode}
+            onClose={() => setAddMode(false)}
+          />
         </div>
       )}
 
@@ -176,7 +222,7 @@ const ChatBox = ({ headerActive, currentUserId, chatId }: Props) => {
                   {isGroupChat ? groupName : receiverUser?.username}
                 </span>
               </div>
-              <Info color="#00bfff"/>
+              <Info color="#00bfff" />
             </div>
           )}
 
@@ -217,7 +263,7 @@ const ChatBox = ({ headerActive, currentUserId, chatId }: Props) => {
                           />
                         )}
                         {msg.text && <p className="text-sm">{msg.text}</p>}
-                        <div className="text-[10px] text-gray-400 mt-1 text-right">
+                        <div className="text-[10px] text-gray-600 mt-1 text-right">
                           {msg.timestamp?.toDate
                             ? new Date(
                                 msg.timestamp.toDate()
