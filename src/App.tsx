@@ -58,7 +58,11 @@ function App() {
             currentUserId={user?.uid || ""}
             chatId={chatId}
           />
-          {chatId && <Detail chatId={chatId} currentUserId={user?.uid || ""} />}
+          <Detail 
+            currentUserId={user?.uid || ''}
+            chatId={chatId}
+          />
+
         </div>
       ) : (
         <div className="flex items-center justify-center h-full">
