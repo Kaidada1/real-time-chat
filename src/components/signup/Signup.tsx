@@ -134,12 +134,13 @@ const Signup = ({ onToggleLogin }: Props) => {
 
         <div className="text-sm text-gray-500 mt-2">Already have an account?</div>
 
-        <button
+        <Button
           onClick={onToggleLogin}
+          variant="link"
           className="text-pink-500 font-semibold hover:underline"
         >
           SIGN IN
-        </button>
+        </Button>
       </div>
     </div>
   );
