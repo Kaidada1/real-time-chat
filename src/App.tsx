@@ -58,14 +58,14 @@ function App() {
             currentUserId={user?.uid || ""}
             chatId={chatId}
           />
-<<<<<<< HEAD
+
           <Detail 
-            currentUserId={user?.uid || ''}
+            currentUserId={user?.uid}
             chatId={chatId}
           />
-=======
-          {chatId && <Detail chatId={chatId} currentUserId={user?.uid || ""} />}
->>>>>>> update_Color
+
+      
+
         </div>
       ) : (
         <div className="flex items-center justify-center h-full">

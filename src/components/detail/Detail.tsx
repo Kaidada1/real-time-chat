@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionTrigger } from "../ui/accordion";
 import { AccordionItem } from "@radix-ui/react-accordion";
+import AddToGroup from "./addtogroup/addToGroup";
 
 type Props = {
   chatId: string;
@@ -14,6 +15,7 @@ const Detail = ({ chatId, currentUserId }: Props) => {
   const [groupName, setGroupName] = useState("");
   const [receiverUser, setReceiverUser] = useState<DocumentData | null>(null);
   const [isGroupChat, setIsGroupChat] = useState(false);
+  const [addMode, setAddMode] = useState(false);
 
   useEffect(() => {
     if (!chatId || !currentUserId) return;
@@ -74,6 +76,12 @@ const Detail = ({ chatId, currentUserId }: Props) => {
             <AccordionTrigger>Privacy</AccordionTrigger>
             <AccordionContent>
               <Button className="w-full">Thêm thành viên</Button>
+              {addMode && (
+                <AddToGroup
+                  isOpen={addMode}
+                  onClose={() => setAddMode(false)}
+                />
+              )}
             </AccordionContent>
           </AccordionItem>
         </Accordion>
