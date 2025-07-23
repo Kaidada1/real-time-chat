@@ -8,11 +8,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { db } from "@/lib/firebase";
 import { Label } from "@radix-ui/react-label";
-import { collection, getDoc, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import React from "react";
 
 interface User {
   id: string;
+  email: string;
   name?: string;
   avatarUrl?: string;
 }
@@ -20,31 +21,39 @@ interface User {
 type Props = {
   isOpen: boolean;
   onClose: () => void;
+  currentId: string;
 };
 
-const AddToGroup = ({ isOpen, onClose }: Props) => {
-  const [userName, setUserName] = React.useState("");
+const AddToGroup = ({ isOpen, onClose, currentId }: Props) => {
+  const [email, setEmail] = React.useState("");
   const [searchResult, setSearchResult] = React.useState<User | null>(null);
 
   const handleSearch = async (e) => {
     e.preventDefault();
     setSearchResult(null);
 
-    const q = query(collection(db, "users"), where("username", "==", userName));
+    const q = query(collection(db, "users"), where("email", "==", email));
     const querySnapshot = await getDocs(q);
 
     if (!querySnapshot.empty) {
       const user = querySnapshot.docs[0].data();
       setSearchResult({
         id: user.id,
+        email: user.email,
         name: user.username,
         avatarUrl: user.avatar,
       });
     }
-    console.log("search",searchResult)
   };
 
-  const handleAddMember = async () => {};
+  const handleAddMember = async () => {
+    if (!searchResult) return;
+
+    const q = query(
+      collection(db, "conversations"),
+      where("users", "array-contains", currentId)
+    );
+  };
 
   return (
     <Dialog open={isOpen}>
@@ -54,9 +63,9 @@ const AddToGroup = ({ isOpen, onClose }: Props) => {
         </DialogHeader>
         <form className="flex gap-3 mb-4" onSubmit={handleSearch}>
           <Input
-            placeholder="Search"
-            value={userName}
-            onChange={(e) => setUserName(e.target.value)}
+            placeholder="Search Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
           <Button type="submit">Find</Button>
         </form>

@@ -21,6 +21,7 @@ import { Label } from "@radix-ui/react-label";
 
 interface User {
   id: string;
+  email: string;
   name?: string;
   avatarUrl?: string;
 }
@@ -32,7 +33,7 @@ interface AddUserProps {
 }
 
 const AddUser = ({ isOpen, onClose, currentUserId }: AddUserProps) => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [searchResult, setSearchResult] = useState<User | null>(null);
   const [error, setError] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
@@ -43,13 +44,14 @@ const AddUser = ({ isOpen, onClose, currentUserId }: AddUserProps) => {
     setError("");
     setSearchResult(null);
 
-    const q = query(collection(db, "users"), where("username", "==", username));
+    const q = query(collection(db, "users"), where("email", "==", email));
     const querySnapshot = await getDocs(q);
 
     if (!querySnapshot.empty) {
       const doc = querySnapshot.docs[0];
       setSearchResult({
         id: doc.id,
+        email: doc.data().email,
         name: doc.data().username,
         avatarUrl: doc.data().avatar,
       });
@@ -83,11 +85,11 @@ const AddUser = ({ isOpen, onClose, currentUserId }: AddUserProps) => {
     onClose();
   };
 
-  const handleSelectForGroup = () => {
+  function handleSelectForGroup() {
     if (searchResult && !selectedUsers.find((u) => u.id === searchResult.id)) {
       setSelectedUsers((prev) => [...prev, searchResult]);
     }
-  };
+  }
 
   const handleCreateGroup = async () => {
     if (!groupName.trim() || selectedUsers.length < 1) return;
@@ -109,13 +111,13 @@ const AddUser = ({ isOpen, onClose, currentUserId }: AddUserProps) => {
     <AlertDialog open={isOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Add User</AlertDialogTitle>
+          <AlertDialogTitle>Add User for Chat</AlertDialogTitle>
         </AlertDialogHeader>
         <form onSubmit={handleSearch} className="flex gap-3 mb-4">
           <Input
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Search User"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter Email"
           />
           <Button type="submit">Search</Button>
         </form>

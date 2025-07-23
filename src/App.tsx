@@ -51,7 +51,7 @@ function App() {
         <div
           className={`grid grid-cols-[300px_1fr_300px] h-full shadow-lg overflow-hidden ${
             !detailView
-              ? "grid lg:grid-cols-[300px_1fr_0px]"
+              ? "grid grid-cols-[300px_1fr_0px]"
               : ""
           }`}
         >

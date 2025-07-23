@@ -7,7 +7,6 @@ import { AccordionItem } from "@radix-ui/react-accordion";
 import AddToGroup from "./addtogroup/addToGroup";
 
 type Props = {
-  detailView: false;
   chatId: string;
   currentUserId: string;
 };
@@ -48,6 +47,7 @@ const Detail = ({ chatId, currentUserId }: Props) => {
   }, [chatId, currentUserId]);
 
   return (
+    
     <div className="h-full w-full bg-[#111827] text-white p-6 flex flex-col gap-6">
       {/* <div className="flex flex-col items-center">
         {!isGroupChat && receiverUser?.avatar && (
