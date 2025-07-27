@@ -47,7 +47,6 @@ const Detail = ({ chatId, currentUserId }: Props) => {
   }, [chatId, currentUserId]);
 
   return (
-    
     <div className="h-full w-full bg-[#111827] text-white p-6 flex flex-col gap-6">
       {/* <div className="flex flex-col items-center">
         {!isGroupChat && receiverUser?.avatar && (
@@ -73,23 +72,32 @@ const Detail = ({ chatId, currentUserId }: Props) => {
             <AccordionTrigger>Chat Setting</AccordionTrigger>
             <AccordionContent></AccordionContent>
           </AccordionItem>
-          <AccordionItem value="item-2">
-            <AccordionTrigger>Privacy</AccordionTrigger>
-            <AccordionContent>
-              <Button
-                className="w-full"
-                onClick={() => setAddMode((prev) => !prev)}
-              >
-                Add Member
-              </Button>
-              {addMode && (
-                <AddToGroup
-                  isOpen={addMode}
-                  onClose={() => setAddMode(false)}
-                />
-              )}
-            </AccordionContent>
-          </AccordionItem>
+          {isGroupChat ?(
+            <AccordionItem value="item-2">
+              <AccordionTrigger>Privacy</AccordionTrigger>
+              <AccordionContent>
+                <Button
+                  className="w-full"
+                  onClick={() => setAddMode((prev) => !prev)}
+                >
+                  Add Member
+                </Button>
+                {addMode && (
+                  <AddToGroup
+                    isOpen={addMode}
+                    onClose={() => setAddMode(false)}
+                    currentId={currentUserId}
+                    conversationId={chatId}
+                  />
+                )}
+              </AccordionContent>
+            </AccordionItem>
+          ):(
+            <AccordionItem value="item-2">
+              <AccordionTrigger>Privacy</AccordionTrigger>
+              <AccordionContent></AccordionContent>
+            </AccordionItem>
+          )}
         </Accordion>
       </div>
       {/* Share Photos */}

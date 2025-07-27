@@ -1,7 +1,16 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Smile, ImageIcon, LogOutIcon, PlusIcon, Info } from "lucide-react";
+import {
+  Smile,
+  ImageIcon,
+  LogOutIcon,
+  PlusIcon,
+  Info,
+  Check,
+  X,
+  User,
+} from "lucide-react";
 import EmojiPicker from "emoji-picker-react";
 import AddUser from "./adduser/addUser";
 import { signOut } from "firebase/auth";
@@ -14,9 +23,16 @@ import {
   arrayUnion,
   updateDoc,
   serverTimestamp,
+  query,
+  collection,
+  getDocs,
+  deleteDoc,
 } from "firebase/firestore";
 import upload from "../../lib/upload";
 import { Label } from "@radix-ui/react-label";
+import { ScrollArea } from "../ui/scroll-area";
+import AddFriend from "./addfriend/addFriend";
+import { Avatar, AvatarImage } from "../ui/avatar";
 
 type Props = {
   setDetailView: React.Dispatch<React.SetStateAction<boolean>>;
@@ -25,13 +41,20 @@ type Props = {
   chatId: string;
 };
 
-const ChatBox = ({ headerActive, currentUserId, chatId, setDetailView }: Props) => {
+const ChatBox = ({
+  headerActive,
+  currentUserId,
+  chatId,
+  setDetailView,
+}: Props) => {
   const [messages, setMessages] = useState<any[]>([]);
   const [receiverUser, setReceiverUser] = useState<any | null>(null);
+  const [friendRequests, setFriendRequests] = useState<any[]>([]);
   const [groupName, setGroupName] = useState("");
+  const [selectedEmoji, setSelectedEmoji] = useState("");
   const [isGroupChat, setIsGroupChat] = useState(false);
   const [addMode, setAddMode] = useState(false);
-  const [selectedEmoji, setSelectedEmoji] = useState("");
+  const [addFriends, setAddFriend] = useState(false);
   const [openEmoji, setOpenEmoji] = useState(false);
   const [img, setImg] = useState({ file: null, url: "" });
 
@@ -53,6 +76,49 @@ const ChatBox = ({ headerActive, currentUserId, chatId, setDetailView }: Props) 
         url: URL.createObjectURL(e.target.files[0]),
       });
     }
+  };
+
+  const fetchFriendRequests = async () => {
+    const q = query(collection(db, "friends"));
+    const snapshot = await getDocs(q);
+
+    const requests = await Promise.all(
+      snapshot.docs
+        .map((doc) => ({ id: doc.id, ...(doc.data() as any) }))
+        .filter(
+          (doc) => doc.status === "waiting" && doc.receiver === currentUserId
+        )
+        .map(async (request) => {
+          const senderDoc = await getDoc(doc(db, "users", request.sender));
+          const senderData = senderDoc.exists() ? senderDoc.data() : null;
+          return {
+            ...request,
+            name: senderData?.username || "Unknown",
+            avatar: senderData?.avatar,
+          };
+        })
+    );
+
+    setFriendRequests(requests);
+  };
+
+  const handleAccept = async (id: any) => {
+    updateDoc(doc(db, "friends", id), { status: "accepted" });
+
+    const friendDoc = await getDoc(doc(db, "friends", id));
+    if (!friendDoc.exists) return;
+
+    const senderId = friendDoc.data().sender;
+
+    const newDocRef = doc(collection(db, "conversations"));
+    await setDoc(newDocRef, {
+      users: [currentUserId, senderId],
+      messages: [],
+      createdAt: serverTimestamp(),
+    });
+  };
+  const handleReject = (id: any) => {
+    deleteDoc(doc(db, "friends", id));
   };
 
   const handleSendMessage = async () => {
@@ -130,6 +196,10 @@ const ChatBox = ({ headerActive, currentUserId, chatId, setDetailView }: Props) 
   }, [chatId, currentUserId]);
 
   useEffect(() => {
+    fetchFriendRequests();
+  }, [currentUserId]);
+
+  useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
@@ -146,20 +216,71 @@ const ChatBox = ({ headerActive, currentUserId, chatId, setDetailView }: Props) 
   return (
     <div className="flex flex-col h-full overflow-hidden bg-background">
       {headerActive === "cb-header-1" && (
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-          <Button onClick={() => setAddMode((prev) => !prev)} variant="default">
-            <PlusIcon className="mr-2 h-4 w-4" /> Add
-          </Button>
-          <Button variant="destructive" onClick={handleLogout}>
-            <LogOutIcon className="mr-2 h-4 w-4" /> Logout
-          </Button>
-          {addMode && (
-            <AddUser
-              currentUserId={currentUserId}
-              isOpen={addMode}
-              onClose={() => setAddMode(false)}
-            />
+        <div>
+          <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+            <Button
+              onClick={() => setAddMode((prev) => !prev)}
+              variant="default"
+            >
+              <PlusIcon className="mr-2 h-4 w-4" /> Add
+            </Button>
+            <Button
+              onClick={() => setAddFriend((prev) => !prev)}
+              variant="default"
+            >
+              <User className="mr-2 h-4 w-4" /> Add Friend
+            </Button>
+            <Button variant="destructive" onClick={handleLogout}>
+              <LogOutIcon className="mr-2 h-4 w-4" /> Logout
+            </Button>
+            {addMode && (
+              <AddUser
+                currentUserId={currentUserId}
+                isOpen={addMode}
+                onClose={() => setAddMode(false)}
+              />
+            )}
+            {addFriends && (
+              <AddFriend
+                currentUserId={currentUserId}
+                isOpen={addFriends}
+                onClose={() => setAddFriend(false)}
+              />
+            )}
+          </div>
+          {friendRequests.length > 0 && (
+            <div className="flex justify-center mt-3">
+              <Label className="text-black">Friend Requests</Label>
+            </div>
           )}
+
+          {friendRequests.map((request) => (
+            <div
+              key={request.id}
+              className="flex w-[95%] items-center m-3 justify-between"
+            >
+              <div className="flex justify-center items-center">
+                <Avatar className="mx-4">
+                  <AvatarImage src={request.avatar} />
+                </Avatar>
+                <Label className="text-black">{request.name}</Label>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  className="rounded-full bg-white shadow-none w-8 h-8 hover:bg-slate-200"
+                  onClick={() => handleReject(request.id)}
+                >
+                  <X color="#E5484D" />
+                </Button>
+                <Button
+                  className="rounded-full bg-white shadow-none w-8 h-8 hover:bg-slate-200"
+                  onClick={() => handleAccept(request.id)}
+                >
+                  <Check color="#3DD68C" />
+                </Button>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
@@ -169,73 +290,73 @@ const ChatBox = ({ headerActive, currentUserId, chatId, setDetailView }: Props) 
           <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-border">
             <div className="flex items-center space-x-3">
               {!isGroupChat && receiverUser?.avatar && (
-                <img
-                  src={receiverUser.avatar}
-                  alt=""
-                  className="w-10 h-10 rounded-full object-cover"
-                />
+                <Avatar className="mx-4">
+                  <AvatarImage src={receiverUser.avatar} />
+                </Avatar>
               )}
               <Label className="text-lg font-medium text-black">
                 {isGroupChat ? groupName : receiverUser?.username}
               </Label>
             </div>
-            <Info color="#00bfff" onClick={()=>setDetailView((prev) => !prev)} />
+            <Info
+              color="#00bfff"
+              onClick={() => setDetailView((prev) => !prev)}
+            />
           </div>
 
           <div className="flex flex-col flex-1 overflow-hidden">
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
-              {messages.map((msg, index) => {
-                const isOwn = msg.sender === currentUserId;
-                return (
-                  <div
-                    key={index}
-                    className={`flex ${
-                      isOwn ? "justify-end" : "justify-start"
-                    }`}
-                  >
+            <ScrollArea className="h-full">
+              <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+                {messages.map((msg, index) => {
+                  const isOwn = msg.sender === currentUserId;
+                  return (
                     <div
-                      className={`flex items-end ${
-                        isOwn ? "flex-row-reverse" : ""
+                      key={index}
+                      className={`flex ${
+                        isOwn ? "justify-end" : "justify-start"
                       }`}
                     >
-                      <img
-                        src={msg.avatar}
-                        className="w-8 h-8 rounded-full object-cover"
-                        alt=""
-                      />
                       <div
-                        className={`max-w-xs px-4 py-2 rounded-2xl shadow-sm ${
-                          isOwn
-                            ? "bg-cyan-400 text-primary-foreground rounded mr-2"
-                            : "bg-zinc-300 text-foreground rounded ml-2"
+                        className={`flex items-end ${
+                          isOwn ? "flex-row-reverse" : ""
                         }`}
                       >
-                        {msg.img && (
-                          <img
-                            src={msg.img}
-                            className="max-h-48 rounded-md mb-2 object-cover"
-                            alt="sent"
-                          />
-                        )}
-                        {msg.message && (
-                          <Label className="text-sm">{msg.message}</Label>
-                        )}
-                        <div className="text-[10px] text-gray-600 mt-1 text-right">
-                          {msg.sentAt
-                            ? new Date(
-                                msg.sentAt.seconds * 1000
-                              ).toLocaleTimeString()
-                            : "Just now"}
+                        <Avatar>
+                          <AvatarImage src={msg.avatar} />
+                        </Avatar>
+                        <div
+                          className={`max-w-xs px-4 py-2 rounded-2xl shadow-sm ${
+                            isOwn
+                              ? "bg-cyan-400 text-primary-foreground rounded mr-2"
+                              : "bg-zinc-300 text-foreground rounded ml-2"
+                          }`}
+                        >
+                          {msg.img && (
+                            <img
+                              src={msg.img}
+                              className="max-h-48 rounded-md mb-2 object-cover"
+                              alt="sent"
+                            />
+                          )}
+                          {msg.message && (
+                            <Label className="text-sm">{msg.message}</Label>
+                          )}
+                          <div className="text-[10px] text-gray-600 mt-1 text-right">
+                            {msg.sentAt
+                              ? new Date(
+                                  msg.sentAt.seconds * 1000
+                                ).toLocaleTimeString()
+                              : "Just now"}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-              <div ref={endRef}></div>
-            </div>
-
+                  );
+                })}
+                <div ref={endRef}></div>
+              </div>
+            </ScrollArea>
             {/* Preview Image */}
             {img.url && (
               <div className="shrink-0 relative w-fit bg-muted p-2 rounded-lg m-3">

@@ -8,7 +8,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { db } from "@/lib/firebase";
 import { Label } from "@radix-ui/react-label";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { arrayUnion, collection, doc, getDoc, getDocs, query, updateDoc, where } from "firebase/firestore";
 import React from "react";
 
 interface User {
@@ -22,9 +22,10 @@ type Props = {
   isOpen: boolean;
   onClose: () => void;
   currentId: string;
+  conversationId: string;
 };
 
-const AddToGroup = ({ isOpen, onClose, currentId }: Props) => {
+const AddToGroup = ({ isOpen, onClose, currentId,conversationId }: Props) => {
   const [email, setEmail] = React.useState("");
   const [searchResult, setSearchResult] = React.useState<User | null>(null);
 
@@ -47,13 +48,33 @@ const AddToGroup = ({ isOpen, onClose, currentId }: Props) => {
   };
 
   const handleAddMember = async () => {
-    if (!searchResult) return;
+  if (!searchResult) return;
 
-    const q = query(
-      collection(db, "conversations"),
-      where("users", "array-contains", currentId)
-    );
-  };
+  const conversationRef = doc(db, "conversations", conversationId);
+
+  const docSnap = await getDoc(conversationRef);
+
+  if (docSnap.exists()) {
+    const conversationData = docSnap.data();
+    const existingUsers = conversationData.users || [];
+
+    if (existingUsers.includes(searchResult.id)) {
+      alert("User is already in the group.");
+      return;
+    }
+
+    await updateDoc(conversationRef, {
+      users: arrayUnion(searchResult.id),
+    });
+
+    alert("User added successfully.");
+    setSearchResult(null);
+    setEmail("");
+    onClose();
+  } else {
+    alert("Group not found.");
+  }
+};
 
   return (
     <Dialog open={isOpen}>

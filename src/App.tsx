@@ -49,10 +49,10 @@ function App() {
     <div className="w-[100vw] h-screen bg-gray-900 text-white">
       {user ? (
         <div
-          className={`grid grid-cols-[300px_1fr_300px] h-full shadow-lg overflow-hidden ${
+          className={` h-full shadow-lg overflow-hidden ${
             !detailView
               ? "grid grid-cols-[300px_1fr_0px]"
-              : ""
+              : "grid grid-cols-[300px_1fr_300px]"
           }`}
         >
           <ListRTC

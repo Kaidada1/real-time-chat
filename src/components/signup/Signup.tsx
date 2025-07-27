@@ -6,6 +6,7 @@ import { doc, setDoc } from "firebase/firestore";
 import upload from "../../lib/upload";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { Label } from "@radix-ui/react-label";
 
 type Props = {
   onToggleLogin?: () => void;
@@ -73,7 +74,7 @@ const Signup = ({ onToggleLogin }: Props) => {
 
         <form onSubmit={handleRegister} className="w-full flex flex-col gap-4">
           <div className="flex justify-center">
-            <label htmlFor="file" className="cursor-pointer flex flex-col items-center">
+            <Label htmlFor="file" className="cursor-pointer flex flex-col items-center">
               {avatar.url ? (
                 <img
                   src={avatar.url}
@@ -85,8 +86,8 @@ const Signup = ({ onToggleLogin }: Props) => {
                   Upload Avatar
                 </div>
               )}
-            </label>
-            <input
+            </Label>
+            <Input
               type="file"
               id="file"
               style={{ display: "none" }}
@@ -95,7 +96,7 @@ const Signup = ({ onToggleLogin }: Props) => {
           </div>
 
           <div>
-            <label className="text-sm text-gray-600">Username</label>
+            <Label className="text-sm text-gray-600">Username</Label>
             <Input
               type="text"
               name="username"
@@ -105,7 +106,7 @@ const Signup = ({ onToggleLogin }: Props) => {
           </div>
 
           <div>
-            <label className="text-sm text-gray-600">Email</label>
+            <Label className="text-sm text-gray-600">Email</Label>
             <Input
               type="email"
               name="email"
@@ -115,7 +116,7 @@ const Signup = ({ onToggleLogin }: Props) => {
           </div>
 
           <div>
-            <label className="text-sm text-gray-600">Password</label>
+            <Label className="text-sm text-gray-600">Password</Label>
             <Input
               type="password"
               name="password"
