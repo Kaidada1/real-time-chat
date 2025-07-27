@@ -8,11 +8,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { db } from "@/lib/firebase";
 import { Label } from "@radix-ui/react-label";
-import { collection, getDoc, getDocs, query, where } from "firebase/firestore";
+import { arrayUnion, collection, doc, getDoc, getDocs, query, updateDoc, where } from "firebase/firestore";
 import React from "react";
 
 interface User {
   id: string;
+  email: string;
   name?: string;
   avatarUrl?: string;
 }
@@ -20,31 +21,60 @@ interface User {
 type Props = {
   isOpen: boolean;
   onClose: () => void;
+  currentId: string;
+  conversationId: string;
 };
 
-const AddToGroup = ({ isOpen, onClose }: Props) => {
-  const [userName, setUserName] = React.useState("");
+const AddToGroup = ({ isOpen, onClose, currentId,conversationId }: Props) => {
+  const [email, setEmail] = React.useState("");
   const [searchResult, setSearchResult] = React.useState<User | null>(null);
 
   const handleSearch = async (e) => {
     e.preventDefault();
     setSearchResult(null);
 
-    const q = query(collection(db, "users"), where("username", "==", userName));
+    const q = query(collection(db, "users"), where("email", "==", email));
     const querySnapshot = await getDocs(q);
 
     if (!querySnapshot.empty) {
       const user = querySnapshot.docs[0].data();
       setSearchResult({
         id: user.id,
+        email: user.email,
         name: user.username,
         avatarUrl: user.avatar,
       });
     }
-    console.log("search",searchResult)
   };
 
-  const handleAddMember = async () => {};
+  const handleAddMember = async () => {
+  if (!searchResult) return;
+
+  const conversationRef = doc(db, "conversations", conversationId);
+
+  const docSnap = await getDoc(conversationRef);
+
+  if (docSnap.exists()) {
+    const conversationData = docSnap.data();
+    const existingUsers = conversationData.users || [];
+
+    if (existingUsers.includes(searchResult.id)) {
+      alert("User is already in the group.");
+      return;
+    }
+
+    await updateDoc(conversationRef, {
+      users: arrayUnion(searchResult.id),
+    });
+
+    alert("User added successfully.");
+    setSearchResult(null);
+    setEmail("");
+    onClose();
+  } else {
+    alert("Group not found.");
+  }
+};
 
   return (
     <Dialog open={isOpen}>
@@ -54,9 +84,9 @@ const AddToGroup = ({ isOpen, onClose }: Props) => {
         </DialogHeader>
         <form className="flex gap-3 mb-4" onSubmit={handleSearch}>
           <Input
-            placeholder="Search"
-            value={userName}
-            onChange={(e) => setUserName(e.target.value)}
+            placeholder="Search Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
           <Button type="submit">Find</Button>
         </form>

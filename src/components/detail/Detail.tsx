@@ -1,4 +1,4 @@
-import { db, storage } from "@/lib/firebase";
+import { db} from "@/lib/firebase";
 import { doc, getDoc, DocumentData } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,6 @@ import { AccordionItem } from "@radix-ui/react-accordion";
 import AddToGroup from "./addtogroup/addToGroup";
 
 type Props = {
-  detailView: false;
   chatId: string;
   currentUserId: string;
 };
@@ -73,23 +72,32 @@ const Detail = ({ chatId, currentUserId }: Props) => {
             <AccordionTrigger>Chat Setting</AccordionTrigger>
             <AccordionContent></AccordionContent>
           </AccordionItem>
-          <AccordionItem value="item-2">
-            <AccordionTrigger>Privacy</AccordionTrigger>
-            <AccordionContent>
-              <Button
-                className="w-full"
-                onClick={() => setAddMode((prev) => !prev)}
-              >
-                Add Member
-              </Button>
-              {addMode && (
-                <AddToGroup
-                  isOpen={addMode}
-                  onClose={() => setAddMode(false)}
-                />
-              )}
-            </AccordionContent>
-          </AccordionItem>
+          {isGroupChat ?(
+            <AccordionItem value="item-2">
+              <AccordionTrigger>Privacy</AccordionTrigger>
+              <AccordionContent>
+                <Button
+                  className="w-full"
+                  onClick={() => setAddMode((prev) => !prev)}
+                >
+                  Add Member
+                </Button>
+                {addMode && (
+                  <AddToGroup
+                    isOpen={addMode}
+                    onClose={() => setAddMode(false)}
+                    currentId={currentUserId}
+                    conversationId={chatId}
+                  />
+                )}
+              </AccordionContent>
+            </AccordionItem>
+          ):(
+            <AccordionItem value="item-2">
+              <AccordionTrigger>Privacy</AccordionTrigger>
+              <AccordionContent></AccordionContent>
+            </AccordionItem>
+          )}
         </Accordion>
       </div>
       {/* Share Photos */}

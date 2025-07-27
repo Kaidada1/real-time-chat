@@ -8,6 +8,7 @@ import { auth, db } from "../../lib/firebase";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import { Label } from "@radix-ui/react-label";
 
 type Props = {
   onToggleSignup?: () => void;
@@ -60,7 +61,7 @@ const Login = ({ onToggleSignup }: Props) => {
 
         <form onSubmit={handleLogin} className="w-full flex flex-col gap-4">
           <div>
-            <label className="text-sm text-gray-600">Email</label>
+            <Label className="text-sm text-gray-600">Email</Label>
             <Input
               type="text"
               name="email"
@@ -70,10 +71,11 @@ const Login = ({ onToggleSignup }: Props) => {
           </div>
 
           <div>
-            <label className="text-sm text-gray-600">Password</label>
+            <Label className="text-sm text-gray-600">Password</Label>
             <Input
               type="password"
               name="password"
+              required
               placeholder="Type your password"
               className="mt-1 text-black"
             />
@@ -92,7 +94,7 @@ const Login = ({ onToggleSignup }: Props) => {
         <div className="flex gap-4">
           <Button
             onClick={handleGoogleLogin}
-            className="bg-red-600 text-white font-bold px-4 py-2 rounded-md shadow hover:opacity-90 transition"
+            className="bg-red-600 text-white font-bold px-4 py-2 rounded-full shadow hover:opacity-90 transition"
           >
             Google
           </Button>

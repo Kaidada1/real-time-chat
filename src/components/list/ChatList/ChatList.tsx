@@ -4,6 +4,7 @@ import { db } from "../../../lib/firebase";
 import { collection, doc, getDoc, onSnapshot, query } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@radix-ui/react-label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type Chat = {
   chatId: string;
@@ -135,53 +136,56 @@ const ChatList = ({ setHeaderActive, userId, setChatId }: Props) => {
       </div>
 
       <div
-        className="px-4 py-2 text-sm text-indigo-400 font-semibold cursor-pointer hover:underline"
+        className=" flex px-4 py-2 text-sm text-indigo-400 font-semibold cursor-pointer hover:underline justify-center"
         onClick={handleClick}
       >
-        Friend
+        <Label>Chats</Label>
       </div>
-
-      <div className="flex flex-col gap-1 px-2 overflow-y-auto">
-        {loading
-          ? Array.from({ length: 5 }).map((_, idx) => (
-              <div
-                key={idx}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition"
-              >
-                <Skeleton className="w-10 h-10 rounded-full object-cover" />
-                <div className="flex-1">
-                  <div className="flex justify-between items-center">
-                    <Skeleton className="truncate h-4 w-full" />
+      <ScrollArea>
+        <div className="flex flex-col gap-1 px-2 overflow-y-auto">
+          {loading
+            ? Array.from({ length: 5 }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition"
+                >
+                  <Skeleton className="w-10 h-10 rounded-full object-cover" />
+                  <div className="flex-1">
+                    <div className="flex justify-between items-center">
+                      <Skeleton className="truncate h-4 w-full" />
+                    </div>
+                    <Skeleton className="truncate h-2 w-[70%] mt-3" />
                   </div>
-                  <Skeleton className="truncate h-2 w-[70%] mt-3" />
                 </div>
-              </div>
-            ))
-          : chats.map((chat) => (
-              <div
-                key={chat.chatId}
-                onClick={() => handleChat(chat.chatId)}
-                className="flex items-center gap-3 px-3 py-2 hover:bg-gray-200 rounded-lg cursor-pointer transition"
-              >
-                <img
-                  src={chat.avatarUrl}
-                  alt={chat.name}
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-                <div className="flex-1">
-                  <div className="flex justify-between items-center">
-                    <Label className="font-medium truncate">{chat.name}</Label>
-                    <div className="text-xs text-gray-400 ml-2 whitespace-nowrap">
-                      {formatTimestamp(chat.timestamp)}
+              ))
+            : chats.map((chat) => (
+                <div
+                  key={chat.chatId}
+                  onClick={() => handleChat(chat.chatId)}
+                  className="flex items-center gap-3 px-3 py-2 hover:bg-gray-200 rounded-lg cursor-pointer transition"
+                >
+                  <img
+                    src={chat.avatarUrl}
+                    alt={chat.name}
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                  <div className="flex-1">
+                    <div className="flex justify-between items-center">
+                      <Label className="font-medium truncate">
+                        {chat.name}
+                      </Label>
+                      <div className="text-xs text-gray-400 ml-2 whitespace-nowrap">
+                        {formatTimestamp(chat.timestamp)}
+                      </div>
+                    </div>
+                    <div className="text-sm text-gray-400 truncate">
+                      {chat.lastMessage}
                     </div>
                   </div>
-                  <div className="text-sm text-gray-400 truncate">
-                    {chat.lastMessage}
-                  </div>
                 </div>
-              </div>
-            ))}
-      </div>
+              ))}
+        </div>
+      </ScrollArea>
     </div>
   );
 };
