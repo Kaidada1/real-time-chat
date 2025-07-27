@@ -18,6 +18,7 @@ function App() {
   const [profile, setProfile] = useState(null);
   const [chatId, setChatId] = useState("");
   const [loading, setLoading] = useState(true);
+  const [detailView, setDetailView] = useState<boolean>(false);
 
   useEffect(() => {
     const unSub = onAuthStateChanged(auth, async (user) => {
@@ -47,22 +48,25 @@ function App() {
   return (
     <div className="w-[100vw] h-screen bg-gray-900 text-white">
       {user ? (
-        <div className="grid grid-cols-[300px_1fr_300px] h-full shadow-lg overflow-hidden">
+        <div
+          className={`grid grid-cols-[300px_1fr_300px] h-full shadow-lg overflow-hidden ${
+            !detailView
+              ? "grid lg:grid-cols-[300px_1fr_0px]"
+              : ""
+          }`}
+        >
           <ListRTC
             setHeaderActive={setHeaderActive}
             setChatId={setChatId}
             user={profile}
           />
           <ChatBox
+            setDetailView={setDetailView}
             headerActive={headerActive}
             currentUserId={user?.uid || ""}
             chatId={chatId}
           />
-          <Detail 
-            currentUserId={user?.uid || ''}
-            chatId={chatId}
-          />
-
+          {detailView && <Detail currentUserId={user?.uid} chatId={chatId} />}
         </div>
       ) : (
         <div className="flex items-center justify-center h-full">

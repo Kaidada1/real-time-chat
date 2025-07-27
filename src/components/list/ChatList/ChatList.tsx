@@ -1,17 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { db } from "../../../lib/firebase";
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  limit,
-  onSnapshot,
-  orderBy,
-  query,
-} from "firebase/firestore";
+import { collection, doc, getDoc, onSnapshot, query } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Label } from "@radix-ui/react-label";
 
 type Chat = {
   chatId: string;
@@ -68,7 +60,7 @@ const ChatList = ({ setHeaderActive, userId, setChatId }: Props) => {
         minute: "2-digit",
       });
     } else if (isYesterday) {
-      return "Hôm qua";
+      return "Yesterday";
     } else {
       return date.toLocaleDateString("vi-VN");
     }
@@ -77,104 +69,60 @@ const ChatList = ({ setHeaderActive, userId, setChatId }: Props) => {
   useEffect(() => {
     if (!userId) return;
 
-    let unsubAddedUsers: () => void;
-    let unsubUserChats: () => void;
-
-    const addedUsersMap = new Map<string, Chat>();
-
-    unsubAddedUsers = onSnapshot(
-      collection(db, "users", userId, "addedUsers"),
-      (snapshot) => {
-        snapshot.forEach((docSnap) => {
+    const q = query(collection(db, "conversations"));
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
+      const chatList: Chat[] = await Promise.all(
+        snapshot.docs.map(async (docSnap) => {
           const data = docSnap.data();
-          const chatId = [userId, docSnap.id].sort().join("");
-          addedUsersMap.set(chatId, {
-            chatId,
-            isGroup: false,
-            name: data.username,
-            avatarUrl: data.avatar || "",
-            receiverId: docSnap.id,
-            lastMessage: "",
-          });
-        });
-      }
-    );
+          if (!data.users.includes(userId)) return null;
 
-    unsubUserChats = onSnapshot(
-      doc(db, "userchats", userId),
-      async (docSnap) => {
-        const data = docSnap.data();
-        if (!data || !Array.isArray(data.chats)) {
-          setChats(Array.from(addedUsersMap.values()));
-          return;
-        }
+          const otherUserId = data.users.find((uid: string) => uid !== userId);
+          const lastMsg = data.messages?.[data.messages.length - 1];
 
-        const chatList: Chat[] = (
-          await Promise.all(
-            data.chats.map(async (chat: any): Promise<Chat | null> => {
-              const chatId = chat.chatId;
-              const updatedAt = chat.updatedAt || 0;
+          const updatedAt = lastMsg?.sentAt?.toMillis?.() || 0;
 
-              let lastMessage = chat.lastMessage || "";
+          let lastMessage = "";
+          if (lastMsg) {
+            if (lastMsg.message?.trim()) {
+              lastMessage = lastMsg.message;
+            } else if (lastMsg.img) {
+              lastMessage = "Ảnh";
+            }
+          }
 
-              if (chat.isGroup) {
-                return {
-                  chatId,
-                  isGroup: true,
-                  name: chat.groupName,
-                  avatarUrl: chat.groupAvatar || "./groupAvatar.jpg",
-                  lastMessage,
-                  timestamp: updatedAt,
-                };
-              } else {
-                const receiverDoc = await getDoc(
-                  doc(db, "users", chat.receiverId)
-                );
-                if (!receiverDoc.exists()) return null;
-
-                const receiverData = receiverDoc.data();
-
-                return {
-                  chatId,
-                  isGroup: false,
-                  name: receiverData?.username || "Unknown User",
-                  avatarUrl: receiverData?.avatar || "",
-                  receiverId: chat.receiverId,
-                  lastMessage,
-                  timestamp: updatedAt,
-                };
-              }
-            })
-          )
-        ).filter((chat): chat is Chat => chat !== null);
-
-        const mergedMap = new Map<string, Chat>();
-
-        for (const chat of chatList) {
-          if (!chat.isGroup && chat.receiverId) {
-            mergedMap.set(chat.receiverId, chat);
+          if (data.isGroup) {
+            return {
+              chatId: docSnap.id,
+              isGroup: true,
+              name: data.groupName,
+              avatarUrl: data.groupAvatar || "./groupAvatar.jpg",
+              lastMessage,
+              timestamp: updatedAt,
+            };
           } else {
-            mergedMap.set(chat.chatId, chat);
-          }
-        }
+            if (!otherUserId) return null;
+            const userSnap = await getDoc(doc(db, "users", otherUserId));
+            if (!userSnap.exists()) return null;
+            const userData = userSnap.data();
 
-        addedUsersMap.forEach((chat, id) => {
-          if (
-            !chat.isGroup &&
-            chat.receiverId &&
-            !mergedMap.has(chat.receiverId)
-          ) {
-            mergedMap.set(chat.receiverId, chat);
+            return {
+              chatId: docSnap.id,
+              isGroup: false,
+              name: userData.username,
+              avatarUrl: userData.avatar || "",
+              receiverId: otherUserId,
+              lastMessage,
+              timestamp: updatedAt,
+            };
           }
-        });
+        })
+      );
 
-        setChats(Array.from(mergedMap.values()));
-        setLoading(false);
-      }
-    );
-    return () => {
-      if (unsubAddedUsers) unsubAddedUsers();
-    };
+      setChats(chatList.filter(Boolean) as Chat[]);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, [userId]);
 
   return (
@@ -194,43 +142,45 @@ const ChatList = ({ setHeaderActive, userId, setChatId }: Props) => {
       </div>
 
       <div className="flex flex-col gap-1 px-2 overflow-y-auto">
-        {loading? (
-          Array.from({length: 5}).map((_,idx)=>(
-            <div key={idx} className="flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition">
-              <Skeleton className="w-10 h-10 rounded-full object-cover"></Skeleton>
-              <div className="flex-1">
-                <div className="flex justify-between items-center">
-                  <Skeleton className="truncate h-4 w-full"></Skeleton>
-                </div>
-                <Skeleton className="truncate h-2 w-[70%] mt-3"/>
-              </div>
-            </div>
-          ))
-        ):(chats.map((chat) => (
-          <div
-            key={chat.chatId}
-            onClick={() => handleChat(chat.chatId)}
-            className="flex items-center gap-3 px-3 py-2 hover:bg-gray-200 rounded-lg cursor-pointer transition"
-          >
-            <img
-              src={chat.avatarUrl}
-              alt={chat.name}
-              className="w-10 h-10 rounded-full object-cover"
-            />
-
-            <div className="flex-1">
-              <div className="flex justify-between items-center">
-                <div className="font-medium truncate">{chat.name}</div>
-                <div className="text-xs text-gray-400 ml-2 whitespace-nowrap">
-                  {formatTimestamp(chat.timestamp)}
+        {loading
+          ? Array.from({ length: 5 }).map((_, idx) => (
+              <div
+                key={idx}
+                className="flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition"
+              >
+                <Skeleton className="w-10 h-10 rounded-full object-cover" />
+                <div className="flex-1">
+                  <div className="flex justify-between items-center">
+                    <Skeleton className="truncate h-4 w-full" />
+                  </div>
+                  <Skeleton className="truncate h-2 w-[70%] mt-3" />
                 </div>
               </div>
-              <div className="text-sm text-gray-400 truncate">
-                {chat.lastMessage}
+            ))
+          : chats.map((chat) => (
+              <div
+                key={chat.chatId}
+                onClick={() => handleChat(chat.chatId)}
+                className="flex items-center gap-3 px-3 py-2 hover:bg-gray-200 rounded-lg cursor-pointer transition"
+              >
+                <img
+                  src={chat.avatarUrl}
+                  alt={chat.name}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+                <div className="flex-1">
+                  <div className="flex justify-between items-center">
+                    <Label className="font-medium truncate">{chat.name}</Label>
+                    <div className="text-xs text-gray-400 ml-2 whitespace-nowrap">
+                      {formatTimestamp(chat.timestamp)}
+                    </div>
+                  </div>
+                  <div className="text-sm text-gray-400 truncate">
+                    {chat.lastMessage}
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>)
-        ))}
+            ))}
       </div>
     </div>
   );

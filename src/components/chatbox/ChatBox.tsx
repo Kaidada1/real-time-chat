@@ -8,34 +8,33 @@ import { signOut } from "firebase/auth";
 import { auth, db } from "../../lib/firebase";
 import {
   doc,
-  collection,
-  query,
-  orderBy,
   onSnapshot,
-  addDoc,
-  serverTimestamp,
   getDoc,
-  DocumentData,
-  arrayUnion,
   setDoc,
+  arrayUnion,
+  updateDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 import upload from "../../lib/upload";
+import { Label } from "@radix-ui/react-label";
 
 type Props = {
+  setDetailView: React.Dispatch<React.SetStateAction<boolean>>;
   headerActive: "cb-header-1" | "cb-header-2";
   currentUserId: string;
   chatId: string;
 };
 
-const ChatBox = ({ headerActive, currentUserId, chatId }: Props) => {
-  const [messages, setMessages] = useState<DocumentData[]>([]);
-  const [receiverUser, setReceiverUser] = useState<DocumentData | null>(null);
+const ChatBox = ({ headerActive, currentUserId, chatId, setDetailView }: Props) => {
+  const [messages, setMessages] = useState<any[]>([]);
+  const [receiverUser, setReceiverUser] = useState<any | null>(null);
   const [groupName, setGroupName] = useState("");
   const [isGroupChat, setIsGroupChat] = useState(false);
   const [addMode, setAddMode] = useState(false);
   const [selectedEmoji, setSelectedEmoji] = useState("");
   const [openEmoji, setOpenEmoji] = useState(false);
   const [img, setImg] = useState({ file: null, url: "" });
+
   const endRef = useRef<HTMLDivElement>(null);
   const emojiRef = useRef<HTMLDivElement>(null);
 
@@ -59,9 +58,8 @@ const ChatBox = ({ headerActive, currentUserId, chatId }: Props) => {
   const handleSendMessage = async () => {
     if ((!selectedEmoji.trim() && !img.file) || !chatId) return;
 
-    const imgToSend = img;
     const textToSend = selectedEmoji;
-
+    const imgToSend = img;
     setSelectedEmoji("");
     setImg({ file: null, url: "" });
 
@@ -71,101 +69,65 @@ const ChatBox = ({ headerActive, currentUserId, chatId }: Props) => {
         imgUrl = await upload(imgToSend.file);
       }
 
-      const lastMessage = imgUrl ? "Ảnh" : textToSend;
-
       const userDoc = await getDoc(doc(db, "users", currentUserId));
       const senderAvatar = userDoc.exists() ? userDoc.data().avatar : null;
 
-      await addDoc(collection(db, "chats", chatId, "messages"), {
-        text: textToSend,
-        senderId: currentUserId,
-        senderAvatar,
-        timestamp: serverTimestamp(),
+      const newMessage = {
+        message: textToSend,
+        sender: currentUserId,
+        avatar: senderAvatar,
+        sentAt: new Date(),
         ...(imgUrl && { img: imgUrl }),
-      });
-
-      const updatedAt = Date.now();
-
-      const chatInfo = {
-        chatId,
-        isGroup: isGroupChat,
-        lastMessage,
-        updatedAt,
-        ...(isGroupChat
-          ? {
-              groupName,
-              groupAvatar: "",
-            }
-          : {
-              receiverId: chatId.replace(currentUserId, ""),
-            }),
       };
 
-      const senderRef = doc(db, "userchats", currentUserId);
-      await setDoc(senderRef, { chats: arrayUnion(chatInfo) }, { merge: true });
-
-      if (!isGroupChat) {
-        const receiverId = chatId.replace(currentUserId, "");
-        const receiverRef = doc(db, "userchats", receiverId);
-        await setDoc(
-          receiverRef,
-          {
-            chats: arrayUnion({
-              chatId,
-              isGroup: false,
-              receiverId: currentUserId,
-              lastMessage,
-              updatedAt,
-            }),
-          },
-          { merge: true }
-        );
-      }
+      const convRef = doc(db, "conversations", chatId);
+      await setDoc(
+        convRef,
+        {
+          messages: arrayUnion(newMessage),
+          users: arrayUnion(currentUserId),
+        },
+        { merge: true }
+      );
     } catch (error) {
-      console.error("Send failed: ", error);
+      console.error("Failed to send:", error);
     }
   };
 
   useEffect(() => {
-    if (!chatId || !currentUserId) return;
+    if (!chatId) return;
+    const unsub = onSnapshot(doc(db, "conversations", chatId), (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setMessages(data.messages || []);
+        setIsGroupChat((data.users?.length || 0) > 2);
 
-    const fetchChatInfo = async () => {
-      const chatDoc = await getDoc(doc(db, "chats", chatId));
-      if (chatDoc.exists()) {
-        const data = chatDoc.data();
-        if (data.isGroup) {
-          setIsGroupChat(true);
-          setGroupName(data.name);
-          setReceiverUser(null);
-          return;
+        if (data.groupName) {
+          setGroupName(data.groupName);
         }
       }
-
-      const receiverId = chatId.replace(currentUserId, "");
-      if (!receiverId) return;
-
-      const userDoc = await getDoc(doc(db, "users", receiverId));
-      if (userDoc.exists()) {
-        setReceiverUser(userDoc.data());
-        setIsGroupChat(false);
-        setGroupName("");
-      }
-    };
-
-    fetchChatInfo();
-  }, [chatId, currentUserId]);
-
-  useEffect(() => {
-    if (!chatId) return;
-    const q = query(
-      collection(db, "chats", chatId, "messages"),
-      orderBy("timestamp")
-    );
-    const unsub = onSnapshot(q, (snapshot) => {
-      setMessages(snapshot.docs.map((doc) => doc.data()));
     });
     return () => unsub();
   }, [chatId]);
+
+  useEffect(() => {
+    const fetchReceiver = async () => {
+      if (!chatId || !currentUserId) return;
+      const docSnap = await getDoc(doc(db, "conversations", chatId));
+      if (!docSnap.exists()) return;
+      const data = docSnap.data();
+      const otherUserId = data.users?.find(
+        (id: string) => id !== currentUserId
+      );
+      if (otherUserId) {
+        const userDoc = await getDoc(doc(db, "users", otherUserId));
+        if (userDoc.exists()) {
+          setReceiverUser(userDoc.data());
+        }
+      }
+    };
+    fetchReceiver();
+  }, [chatId, currentUserId]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -177,14 +139,8 @@ const ChatBox = ({ headerActive, currentUserId, chatId }: Props) => {
         setOpenEmoji(false);
       }
     };
-
-    if (openEmoji) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    if (openEmoji) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [openEmoji]);
 
   return (
@@ -197,40 +153,40 @@ const ChatBox = ({ headerActive, currentUserId, chatId }: Props) => {
           <Button variant="destructive" onClick={handleLogout}>
             <LogOutIcon className="mr-2 h-4 w-4" /> Logout
           </Button>
-          <AddUser
-            currentUserId={currentUserId}
-            isOpen={addMode}
-            onClose={() => setAddMode(false)}
-          />
+          {addMode && (
+            <AddUser
+              currentUserId={currentUserId}
+              isOpen={addMode}
+              onClose={() => setAddMode(false)}
+            />
+          )}
         </div>
       )}
 
       {headerActive === "cb-header-2" && (
         <div className="w-full h-full flex flex-col bg-background">
           {/* Header */}
-          {headerActive === "cb-header-2" && (
-            <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-border">
-              <div className="flex items-center space-x-3">
-                {!isGroupChat && receiverUser?.avatar && (
-                  <img
-                    src={receiverUser.avatar}
-                    alt=""
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                )}
-                <span className="text-lg font-medium text-black">
-                  {isGroupChat ? groupName : receiverUser?.username}
-                </span>
-              </div>
-              <Info color="#00bfff" />
+          <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-border">
+            <div className="flex items-center space-x-3">
+              {!isGroupChat && receiverUser?.avatar && (
+                <img
+                  src={receiverUser.avatar}
+                  alt=""
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+              )}
+              <Label className="text-lg font-medium text-black">
+                {isGroupChat ? groupName : receiverUser?.username}
+              </Label>
             </div>
-          )}
+            <Info color="#00bfff" onClick={()=>setDetailView((prev) => !prev)} />
+          </div>
 
           <div className="flex flex-col flex-1 overflow-hidden">
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
               {messages.map((msg, index) => {
-                const isOwn = msg.senderId === currentUserId;
+                const isOwn = msg.sender === currentUserId;
                 return (
                   <div
                     key={index}
@@ -239,20 +195,20 @@ const ChatBox = ({ headerActive, currentUserId, chatId }: Props) => {
                     }`}
                   >
                     <div
-                      className={`flex items-end space-x-2 ${
+                      className={`flex items-end ${
                         isOwn ? "flex-row-reverse" : ""
                       }`}
                     >
                       <img
-                        src={msg.senderAvatar}
+                        src={msg.avatar}
                         className="w-8 h-8 rounded-full object-cover"
                         alt=""
                       />
                       <div
                         className={`max-w-xs px-4 py-2 rounded-2xl shadow-sm ${
                           isOwn
-                            ? "bg-cyan-400 text-primary-foreground rounded-br-none"
-                            : "bg-muted text-foreground rounded-bl-none"
+                            ? "bg-cyan-400 text-primary-foreground rounded mr-2"
+                            : "bg-zinc-300 text-foreground rounded ml-2"
                         }`}
                       >
                         {msg.img && (
@@ -262,11 +218,13 @@ const ChatBox = ({ headerActive, currentUserId, chatId }: Props) => {
                             alt="sent"
                           />
                         )}
-                        {msg.text && <p className="text-sm">{msg.text}</p>}
+                        {msg.message && (
+                          <Label className="text-sm">{msg.message}</Label>
+                        )}
                         <div className="text-[10px] text-gray-600 mt-1 text-right">
-                          {msg.timestamp?.toDate
+                          {msg.sentAt
                             ? new Date(
-                                msg.timestamp.toDate()
+                                msg.sentAt.seconds * 1000
                               ).toLocaleTimeString()
                             : "Just now"}
                         </div>

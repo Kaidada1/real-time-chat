@@ -4,8 +4,10 @@ import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionTrigger } from "../ui/accordion";
 import { AccordionItem } from "@radix-ui/react-accordion";
+import AddToGroup from "./addtogroup/addToGroup";
 
 type Props = {
+  detailView: false;
   chatId: string;
   currentUserId: string;
 };
@@ -14,12 +16,13 @@ const Detail = ({ chatId, currentUserId }: Props) => {
   const [groupName, setGroupName] = useState("");
   const [receiverUser, setReceiverUser] = useState<DocumentData | null>(null);
   const [isGroupChat, setIsGroupChat] = useState(false);
+  const [addMode, setAddMode] = useState(false);
 
   useEffect(() => {
     if (!chatId || !currentUserId) return;
 
     const fetchChatInfo = async () => {
-      const chatDoc = await getDoc(doc(db, "chats", chatId));
+      const chatDoc = await getDoc(doc(db, "conversations", chatId));
       if (chatDoc.exists()) {
         const data = chatDoc.data();
         if (data.isGroup) {
@@ -46,7 +49,7 @@ const Detail = ({ chatId, currentUserId }: Props) => {
 
   return (
     <div className="h-full w-full bg-[#111827] text-white p-6 flex flex-col gap-6">
-      <div className="flex flex-col items-center">
+      {/* <div className="flex flex-col items-center">
         {!isGroupChat && receiverUser?.avatar && (
           <img
             src={receiverUser.avatar}
@@ -57,7 +60,7 @@ const Detail = ({ chatId, currentUserId }: Props) => {
         <h2 className="text-xl font-semibold mt-3">
           {isGroupChat ? groupName : receiverUser?.username}
         </h2>
-      </div>
+      </div> */}
 
       <div className="flex flex-col gap-4">
         <Accordion
@@ -73,7 +76,18 @@ const Detail = ({ chatId, currentUserId }: Props) => {
           <AccordionItem value="item-2">
             <AccordionTrigger>Privacy</AccordionTrigger>
             <AccordionContent>
-              <Button className="w-full">Thêm thành viên</Button>
+              <Button
+                className="w-full"
+                onClick={() => setAddMode((prev) => !prev)}
+              >
+                Add Member
+              </Button>
+              {addMode && (
+                <AddToGroup
+                  isOpen={addMode}
+                  onClose={() => setAddMode(false)}
+                />
+              )}
             </AccordionContent>
           </AccordionItem>
         </Accordion>
