@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import "./userbar.css"
 import { getDownloadURL, ref } from "firebase/storage";
-import { storage } from '../../../lib/firebase';
-import { Settings, Sidebar } from 'lucide-react';
+import { auth, storage } from '../../../lib/firebase';
+import { LogOutIcon, Settings, User2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuShortcut, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { signOut } from 'firebase/auth';
+import { Label } from '@radix-ui/react-label';
 
 type Props = {
   user?: any;
@@ -13,7 +16,15 @@ const UserBar = (props: Props) => {
   const { user } = props;
   const [avatarUrl, setAvatarUrl] = useState("./catavt.png");
 
-  const displayName =user?.username || "UserName";
+  const displayName = user?.username || "UserName";
+
+  const handleLogout = () => {
+    signOut(auth).catch()
+  }
+
+  const handleProfile = () => {
+    window.location.href = "/profile";
+  }
 
   useEffect(() => {
     if (user?.avatar) {
@@ -36,15 +47,33 @@ const UserBar = (props: Props) => {
 
   return (
     <div className='flex items-center justify-between p-5 bg-white text-black border-t-2'>
-        <div className='flex items-center gap-5'>
-            <img src={avatarUrl} alt='User Avatar' className='w-[50px] h-[50px] rounded-full object-cover'/>
-            <h2>{displayName}</h2>
-        </div>
-        <div className='more'>
-          <Button size="icon" className="size-8">
-            <Settings/>
-          </Button>
-        </div>
+      <div className='flex items-center gap-5'>
+        <img src={avatarUrl} alt='User Avatar' className='w-[50px] h-[50px] rounded-full object-cover' />
+        <Label className='text-2xl'>{displayName}</Label>
+      </div>
+      <div className='more'>
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            <Button size="icon" className="size-8 bg-white hover:bg-gray-200 shadow-none" >
+              <Settings color='black' className='border-none' />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={handleProfile}>
+              Profile
+              <DropdownMenuShortcut>
+                <User2 className="mr-2 h-4 w-4"/>
+              </DropdownMenuShortcut>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
+              LogOut
+              <DropdownMenuShortcut>
+                <LogOutIcon className="mr-2 h-4 w-4" />
+              </DropdownMenuShortcut>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
   )
 }

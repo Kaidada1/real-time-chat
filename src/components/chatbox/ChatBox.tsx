@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import {
   Smile,
   ImageIcon,
-  LogOutIcon,
   PlusIcon,
   Info,
   Check,
@@ -13,8 +12,7 @@ import {
 } from "lucide-react";
 import EmojiPicker from "emoji-picker-react";
 import AddUser from "./adduser/addUser";
-import { signOut } from "firebase/auth";
-import { auth, db } from "../../lib/firebase";
+import { db } from "../../lib/firebase";
 import {
   doc,
   onSnapshot,
@@ -65,9 +63,7 @@ const ChatBox = ({
     setSelectedEmoji((prev) => prev + e.emoji);
   };
 
-  const handleLogout = () => {
-    signOut(auth).catch(console.error);
-  };
+
 
   const handleImg = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -191,6 +187,27 @@ const ChatBox = ({
           setReceiverUser(userDoc.data());
         }
       }
+
+      const userDoc = await getDoc(doc(db, "users", otherUserId));
+      const userData = userDoc.exists() ? userDoc.data() : null;
+      const friendSnap = await getDocs(collection(db, "friends"));
+      const matchingFriend = friendSnap.docs.find((doc) => {
+        const d = doc.data();
+        return (
+          ((d.sender === currentUserId && d.receiver === otherUserId) ||
+            (d.sender === otherUserId && d.receiver === currentUserId))
+        );
+      });
+
+      const isFriend = matchingFriend?.data().status === "accepted";
+
+      if (userData) {
+        setReceiverUser({
+          username: userData.username,
+          avatar: userData.avatar,
+          isFriend,
+        });
+      }
     };
     fetchReceiver();
   }, [chatId, currentUserId]);
@@ -230,9 +247,7 @@ const ChatBox = ({
             >
               <User className="mr-2 h-4 w-4" /> Add Friend
             </Button>
-            <Button variant="destructive" onClick={handleLogout}>
-              <LogOutIcon className="mr-2 h-4 w-4" /> Logout
-            </Button>
+
             {addMode && (
               <AddUser
                 currentUserId={currentUserId}
@@ -294,9 +309,14 @@ const ChatBox = ({
                   <AvatarImage src={receiverUser.avatar} />
                 </Avatar>
               )}
-              <Label className="text-lg font-medium text-black">
-                {isGroupChat ? groupName : receiverUser?.username}
-              </Label>
+              <div className="flex flex-col leading-tight">
+                <Label className="text-lg font-medium text-black">
+                  {isGroupChat ? groupName : receiverUser?.username}
+                </Label>
+                {!isGroupChat && receiverUser && !receiverUser.isFriend && (
+                  <Label className="text-sm text-muted-foreground">Stranger</Label>
+                )}
+              </div>
             </div>
             <Info
               color="#00bfff"
@@ -313,24 +333,21 @@ const ChatBox = ({
                   return (
                     <div
                       key={index}
-                      className={`flex ${
-                        isOwn ? "justify-end" : "justify-start"
-                      }`}
+                      className={`flex ${isOwn ? "justify-end" : "justify-start"
+                        }`}
                     >
                       <div
-                        className={`flex items-end ${
-                          isOwn ? "flex-row-reverse" : ""
-                        }`}
+                        className={`flex items-end ${isOwn ? "flex-row-reverse" : ""
+                          }`}
                       >
                         <Avatar>
                           <AvatarImage src={msg.avatar} />
                         </Avatar>
                         <div
-                          className={`max-w-xs px-4 py-2 rounded-2xl shadow-sm ${
-                            isOwn
-                              ? "bg-cyan-400 text-primary-foreground rounded mr-2"
-                              : "bg-zinc-300 text-foreground rounded ml-2"
-                          }`}
+                          className={`max-w-xs px-4 py-2 rounded-2xl shadow-sm ${isOwn
+                            ? "bg-cyan-400 text-primary-foreground rounded mr-2"
+                            : "bg-zinc-300 text-foreground rounded ml-2"
+                            }`}
                         >
                           {msg.img && (
                             <img
@@ -345,8 +362,8 @@ const ChatBox = ({
                           <div className="text-[10px] text-gray-600 mt-1 text-right">
                             {msg.sentAt
                               ? new Date(
-                                  msg.sentAt.seconds * 1000
-                                ).toLocaleTimeString()
+                                msg.sentAt.seconds * 1000
+                              ).toLocaleTimeString()
                               : "Just now"}
                           </div>
                         </div>
